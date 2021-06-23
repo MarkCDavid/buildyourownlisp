@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
   mpca_lang(MPCA_LANG_DEFAULT,
     "                                                            \
       number     : /-?[0-9]+/ ;                                  \
-      operator   : '+' | '-' | '*' | '/' ;                       \
+      operator   : '+' | '-' | '*' | '/' | '%' ;                 \
       expression : <number> | '(' <operator> <expression>+ ')' ; \
       lispy      : /^/ <operator> <expression>+ /$/ ;            \
     ", Number, Operator, Expression, Lispy);
