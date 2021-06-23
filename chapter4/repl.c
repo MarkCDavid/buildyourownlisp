@@ -1,8 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 
-#define INPUT_SIZE 2048
-
-static char input[INPUT_SIZE];
+#include <editline/readline.h>
+#include <editline/history.h>
 
 int main(int argc, char** argv) {
   
@@ -10,11 +10,13 @@ int main(int argc, char** argv) {
 
   while(1) {
     
-    fputs("lispy> ", stdout);
+    char* input = readline("lispy> ");
 
-    fgets(input, INPUT_SIZE, stdin);
+    add_history(input);
 
-    printf("You said: %s", input);
+    printf("You said: %s\n", input);
+
+    free(input);
   }
 
   return 0;
