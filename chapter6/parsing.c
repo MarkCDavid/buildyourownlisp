@@ -31,12 +31,12 @@ int main(int argc, char** argv) {
   mpc_parser_t* Lispy = mpc_new("lispy");
 
   mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                                      \
-      number     : /-?[0-9]+/ ;                                            \
-      named_operator   : \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" ; \
-      operator   : '+' | '-' | '*' | '/' | '%' | <named_operator> ;        \
-      expression : <number> | '(' <operator> <expression>+ ')' ;           \
-      lispy      : /^/ <operator> <expression>+ /$/ ;                      \
+    "                                                                    \
+      number         : /-?([0-9]*\\.[0-9]+|[0-9]+\\.?[0-9]*)/          ; \
+      named_operator : \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" ; \
+      operator       : '+' | '-' | '*' | '/' | '%' | <named_operator>  ; \
+      expression     : <number> | '(' <operator> <expression>+ ')'     ; \
+      lispy          : /^/ <operator> <expression>+ /$/                ; \
     ", Number, NamedOperator, Operator, Expression, Lispy);
 
 
