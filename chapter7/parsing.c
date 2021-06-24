@@ -22,11 +22,25 @@ void add_history(char* history) {}
 #include <editline/history.h>
 #endif
 
+long power(long base, long degree) {
+  long result = 1;
+  for(int i = 0; i < degree; i++) {
+    result *= base;
+  }
+  return result;
+}
+
+
 long eval_op(long x, char* op, long y) {
   if (strcmp(op, "+") == 0) { return x + y; }
   if (strcmp(op, "-") == 0) { return x - y; }
   if (strcmp(op, "*") == 0) { return x * y; }
   if (strcmp(op, "/") == 0) { return x / y; }
+  if (strcmp(op, "%") == 0) { return x % y; }
+  if (strcmp(op, "^") == 0) { return power(x, y); }
+  if (strcmp(op, "min") == 0) { return x > y ? y : x; }
+  if (strcmp(op, "max") == 0) { return x > y ? x : y; }
+
   return 0;
 }
 
@@ -54,11 +68,11 @@ int main(int argc, char** argv) {
   mpc_parser_t* Lispy = mpc_new("lispy");
 
   mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                            \
-      number     : /-?[0-9]+/ ;                                  \
-      operator   : '+' | '-' | '*' | '/' ;                       \
-      expression : <number> | '(' <operator> <expression>+ ')' ; \
-      lispy      : /^/ <operator> <expression>+ /$/ ;            \
+    "                                                                      \
+      number     : /-?[0-9]+/ ;                                            \
+      operator   : '+' | '-' | '*' | '/' | '%' | '^' | \"min\" | \"max\" ; \
+      expression : <number> | '(' <operator> <expression>+ ')' ;           \
+      lispy      : /^/ <operator> <expression>+ /$/ ;                      \
     ", Number, Operator, Expression, Lispy);
 
 
