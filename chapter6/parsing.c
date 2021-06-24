@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
       named_op : \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\"                          ; \
       op       : '+' | '-' | '*' | '/' | '%' | <named_op>                                 ; \
       pexpr    : <num> <op> '(' <expr> ')' | '(' <expr> ')' <op> <expr> | '(' <expr> ')'  ; \
-      expr     : <num> <op> <expr> | <num> <op> <pexpr> | <pexpr> | <num>                 ; \
+      expr     : <num> <op> <expr> | <pexpr> | <num>                                      ; \
       lispy    : /^/ <expr> /$/                                                           ; \
     ", Number, NamedOperator, Operator, ParenthesizedExpression, Expression, Lispy);
 
