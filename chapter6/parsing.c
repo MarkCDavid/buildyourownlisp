@@ -24,22 +24,18 @@ void add_history(char* history) {}
 
 int main(int argc, char** argv) {
 
-  mpc_parser_t* Number = mpc_new("num");
-  mpc_parser_t* NamedOperator = mpc_new("named_op");
-  mpc_parser_t* Operator = mpc_new("op");
-  mpc_parser_t* ParenthesizedExpression = mpc_new("pexpr");
-  mpc_parser_t* Expression = mpc_new("expr");
-  mpc_parser_t* Lispy = mpc_new("lispy");
+  mpc_parser_t* Adjective = mpc_new("adjective");
+  mpc_parser_t* Noun = mpc_new("noun");
+  mpc_parser_t* Phrase = mpc_new("phrase");
+  mpc_parser_t* Doge = mpc_new("doge");
 
   mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                                                       \
-      num      : /-?([0-9]*\\.[0-9]+|[0-9]+\\.?[0-9]*)/                                   ; \
-      named_op : \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\"                          ; \
-      op       : '+' | '-' | '*' | '/' | '%' | <named_op>                                 ; \
-      pexpr    : <num> <op> '(' <expr> ')' | '(' <expr> ')' <op> <expr> | '(' <expr> ')'  ; \
-      expr     : <num> <op> <expr> | <pexpr> | <num>                                      ; \
-      lispy    : /^/ <expr> /$/                                                           ; \
-    ", Number, NamedOperator, Operator, ParenthesizedExpression, Expression, Lispy);
+    "                                                                     \
+      adjective : \"wow\" | \"many\" | \"so\" | \"such\"                 ;\
+      noun      : \"lisp\" | \"language\" | \"book\" | \"build\" | \"c\" ;\
+      phrase    : <adjective> <noun>                                     ;\
+      doge      : /^/ <phrase>* /$/                                      ;\
+    ", Adjective, Noun, Phrase, Doge);
 
 
   puts("Lispy - Press Ctrl+c to Exit\n");
@@ -51,7 +47,7 @@ int main(int argc, char** argv) {
     add_history(input);
 
     mpc_result_t r;
-    if (mpc_parse("<stdin>", input, Lispy, &r)) {
+    if (mpc_parse("<stdin>", input, Doge, &r)) {
       mpc_ast_print(r.output);
       mpc_ast_delete(r.output);
     } else {
@@ -62,7 +58,7 @@ int main(int argc, char** argv) {
     free(input);
   }
 
-  mpc_cleanup(6, Number, NamedOperator, Operator, ParenthesizedExpression, Expression, Lispy);
+  mpc_cleanup(4, Adjective, Noun, Phrase, Doge);
 
   return 0;
 }
