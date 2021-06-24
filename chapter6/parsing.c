@@ -24,20 +24,22 @@ void add_history(char* history) {}
 
 int main(int argc, char** argv) {
 
-  mpc_parser_t* Number = mpc_new("number");
-  mpc_parser_t* NamedOperator = mpc_new("named_operator");
-  mpc_parser_t* Operator = mpc_new("operator");
-  mpc_parser_t* Expression = mpc_new("expression");
+  mpc_parser_t* Number = mpc_new("num");
+  mpc_parser_t* NamedOperator = mpc_new("named_op");
+  mpc_parser_t* Operator = mpc_new("op");
+  mpc_parser_t* ParenthesizedExpression = mpc_new("pexpr");
+  mpc_parser_t* Expression = mpc_new("expr");
   mpc_parser_t* Lispy = mpc_new("lispy");
 
   mpca_lang(MPCA_LANG_DEFAULT,
-    "                                                                    \
-      number         : /-?([0-9]*\\.[0-9]+|[0-9]+\\.?[0-9]*)/          ; \
-      named_operator : \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\" ; \
-      operator       : '+' | '-' | '*' | '/' | '%' | <named_operator>  ; \
-      expression     : <number> | '(' <operator> <expression>+ ')'     ; \
-      lispy          : /^/ <operator> <expression>+ /$/                ; \
-    ", Number, NamedOperator, Operator, Expression, Lispy);
+    "                                                                                       \
+      num      : /-?([0-9]*\\.[0-9]+|[0-9]+\\.?[0-9]*)/                                   ; \
+      named_op : \"add\" | \"sub\" | \"mul\" | \"div\" | \"mod\"                          ; \
+      op       : '+' | '-' | '*' | '/' | '%' | <named_op>                                 ; \
+      pexpr    : <num> <op> '(' <expr> ')' | '(' <expr> ')' <op> <expr> | '(' <expr> ')'  ; \
+      expr     : <num> <op> <expr> | <num> <op> <pexpr> | <pexpr> | <num>                 ; \
+      lispy    : /^/ <expr> /$/                                                           ; \
+    ", Number, NamedOperator, Operator, ParenthesizedExpression, Expression, Lispy);
 
 
   puts("Lispy - Press Ctrl+c to Exit\n");
@@ -60,7 +62,7 @@ int main(int argc, char** argv) {
     free(input);
   }
 
-  mpc_cleanup(5, Number, NamedOperator, Operator, Expression, Lispy);
+  mpc_cleanup(6, Number, NamedOperator, Operator, ParenthesizedExpression, Expression, Lispy);
 
   return 0;
 }
