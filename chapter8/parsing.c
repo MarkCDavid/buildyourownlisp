@@ -24,14 +24,14 @@ void add_history(char* history) {}
 
 typedef struct {
   int type;
-  long num;
+  double num;
   int err;
 } lval;
 
 enum { LVAL_NUM, LVAL_ERR } ;
 enum { LERR_DIV_ZERO, LERR_BAD_OP, LERR_BAD_NUM } ;
 
-lval lval_num(long x) {
+lval lval_num(double x) {
   lval v;
   v.type = LVAL_NUM;
   v.num = x;
@@ -48,7 +48,7 @@ lval lval_err(int x) {
 void lval_print(lval v) {
   switch(v.type) {
     case LVAL_NUM:
-      printf("%li", v.num);
+      printf("%F", v.num);
       break;
     case LVAL_ERR:
       switch(v.err) {
@@ -92,7 +92,7 @@ lval eval_op(lval x, char* op, lval y) {
 lval eval(mpc_ast_t* t) {
   if(strstr(t->tag, "number")) {
     errno = 0;
-    long x = strtol(t->contents, NULL, 10);
+    double x = strtod(t->contents, NULL);
     return errno != ERANGE ? lval_num(x) : lval_err(LERR_BAD_NUM);
   } 
 
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
 
   mpca_lang(MPCA_LANG_DEFAULT,
     "                                                            \
-      number     : /-?[0-9]+/ ;                                  \
+      number     : /-?([0-9]*\\.[0-9]+|[0-9]+\\.?[0-9]*)/ ;      \
       operator   : '+' | '-' | '*' | '/' ;                       \
       expression : <number> | '(' <operator> <expression>+ ')' ; \
       lispy      : /^/ <operator> <expression>+ /$/ ;            \
