@@ -1,3 +1,0 @@
-schema: http | https
-top_level_domain: com | net
-url: <schema>://<string>.<string>.<top_level_domain>
