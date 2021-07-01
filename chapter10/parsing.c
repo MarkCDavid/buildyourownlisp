@@ -302,15 +302,29 @@ lval* builtin_len(lval* a) {
   return v;
 }
 
+lval* builtin_init(lval* a) {
+  LASSERT(a, a->count == 1, "Function 'len' passed to many arguments!");
+  LASSERT(a, a->cell[0]->type == LVAL_QEXPR, "Function 'len' passed incorrect types!");
+  
+  lval* v = lval_pop(a, 0);
+  lval* d = lval_pop(v, v->count - 1);
+
+  lval_del(a);
+  lval_del(d);
+
+  return v;
+}
+
 lval* builtin(lval* a, char* func) {
-  if (strcmp("list", func) == 0) { return builtin_list(a); }
-  if (strcmp("head", func) == 0) { return builtin_head(a); }
-  if (strcmp("tail", func) == 0) { return builtin_tail(a); }
-  if (strcmp("join", func) == 0) { return builtin_join(a); }
-  if (strcmp("eval", func) == 0) { return builtin_eval(a); }
-  if (strcmp("cons", func) == 0) { return builtin_cons(a); }
-  if (strcmp("len", func) == 0) { return builtin_len(a); }
-  if (strstr("+-/*", func)) { return builtin_op(a, func); }
+  if (strcmp("list", func) == 0) { return builtin_list(a);     }
+  if (strcmp("head", func) == 0) { return builtin_head(a);     }
+  if (strcmp("tail", func) == 0) { return builtin_tail(a);     }
+  if (strcmp("join", func) == 0) { return builtin_join(a);     }
+  if (strcmp("eval", func) == 0) { return builtin_eval(a);     }
+  if (strcmp("cons", func) == 0) { return builtin_cons(a);     }
+  if (strcmp("len" , func) == 0) { return builtin_len (a);     }
+  if (strcmp("init", func) == 0) { return builtin_init(a);     }
+  if (strstr("+-/*", func))      { return builtin_op(a, func); }
   lval_del(a);
   return lval_err("Unknown Function!");
 }
@@ -362,7 +376,7 @@ int main(int argc, char** argv) {
     "                                                    \
       number : /-?[0-9]+/ ;                              \
       symbol : \"list\" | \"head\" | \"tail\" | \"join\" \
-             | \"eval\" | \"cons\" | \"len\"             \
+             | \"eval\" | \"cons\" | \"len\"  | \"init\" \
              | '+' | '-' | '*' | '/' ;                   \
       qexpr  : '{' <expr>* '}' ;                         \
       sexpr  : '(' <expr>* ')' ;                         \
