@@ -138,6 +138,20 @@ lval* lval_add(lval* v, lval* x) {
   return v;
 }
 
+lval* lval_add_front(lval* v, lval* x) {
+  lval* r = lval_qexpr();
+  r->count = v->count+1;
+  r->cell = malloc(sizeof(lval*) * r->count);
+  
+  r->cell[0] = x;
+  for (int i = 1; i < r->count; i++) {
+    r->cell[i] =  v->cell[i - 1];
+  }
+
+  free(v);
+  return r;
+}
+
 lval* lval_read(mpc_ast_t* t) {
   if(strstr(t->tag, "number")) { return lval_read_num(t); } 
   if(strstr(t->tag, "symbol")) { return lval_sym(t->contents); } 
@@ -268,12 +282,24 @@ lval* builtin_op(lval* a, char* op) {
   return x;
 }
 
+
+lval* builtin_cons(lval* a) {
+  LASSERT(a, a->count == 2, "Function 'cons' passed to many arguments!");
+  LASSERT(a, a->cell[1]->type == LVAL_QEXPR, "Function 'cons' passed incorrect types!");
+  LASSERT(a, a->cell[1]->count != 0, "Function 'cons' passed {}!");
+
+  lval* v = lval_add_front(a->cell[1], a->cell[0]);
+  free(a);
+  return v;
+}
+
 lval* builtin(lval* a, char* func) {
   if (strcmp("list", func) == 0) { return builtin_list(a); }
   if (strcmp("head", func) == 0) { return builtin_head(a); }
   if (strcmp("tail", func) == 0) { return builtin_tail(a); }
   if (strcmp("join", func) == 0) { return builtin_join(a); }
   if (strcmp("eval", func) == 0) { return builtin_eval(a); }
+  if (strcmp("cons", func) == 0) { return builtin_cons(a); }
   if (strstr("+-/*", func)) { return builtin_op(a, func); }
   lval_del(a);
   return lval_err("Unknown Function!");
@@ -326,7 +352,8 @@ int main(int argc, char** argv) {
     "                                                    \
       number : /-?[0-9]+/ ;                              \
       symbol : \"list\" | \"head\" | \"tail\" | \"join\" \
-             | \"eval\" | '+' | '-' | '*' | '/' ;        \
+             | \"eval\" | \"cons\"                       \
+             | '+' | '-' | '*' | '/' ;                   \
       qexpr  : '{' <expr>* '}' ;                         \
       sexpr  : '(' <expr>* ')' ;                         \
       expr   : <number> | <symbol> | <sexpr> | <qexpr> ; \
