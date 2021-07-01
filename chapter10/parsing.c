@@ -138,19 +138,6 @@ lval* lval_add(lval* v, lval* x) {
   return v;
 }
 
-lval* lval_add_front(lval* v, lval* x) {
-  lval* r = lval_qexpr();
-  r->count = v->count+1;
-  r->cell = malloc(sizeof(lval*) * r->count);
-  
-  r->cell[0] = x;
-  for (int i = 1; i < r->count; i++) {
-    r->cell[i] =  v->cell[i - 1];
-  }
-
-  free(v);
-  return r;
-}
 
 lval* lval_read(mpc_ast_t* t) {
   if(strstr(t->tag, "number")) { return lval_read_num(t); } 
@@ -181,6 +168,15 @@ lval* lval_pop(lval* v, int i) {
   v->count--;
   v->cell = realloc(v->cell, sizeof(lval*) * v->count);
   return x;
+}
+
+lval* lval_unpop(lval* v, lval* x) {
+  lval* r = lval_qexpr();
+  lval_add(r, x);
+  while(v->count > 0) {
+    lval_add(r, lval_pop(v, 0));
+  }
+  return r;
 }
 
 lval* lval_take(lval* v, int i) {
