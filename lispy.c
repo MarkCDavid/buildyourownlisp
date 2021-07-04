@@ -5,6 +5,37 @@
 #include <stdlib.h>
 #include <string.h>
 
+double eval_operator(double x, char* operator, double y) {
+  if (strcmp(operator, "+") == 0) { return x + y; }
+  if (strcmp(operator, "-") == 0) { return x - y; }
+  if (strcmp(operator, "*") == 0) { return x * y; }
+  if (strcmp(operator, "/") == 0) { return x / y; }
+  if (strcmp(operator, "min") == 0) { return x > y ? y : x; }
+  if (strcmp(operator, "max") == 0) { return x > y ? x : y; }
+
+  return 0;
+}
+
+double eval(mpc_ast_t* token) {
+  if(strstr(token->tag, "number")) {
+    return atof(token->contents);
+  } 
+
+  char* operator = token->children[1]->contents;
+
+  double x = eval(token->children[2]);
+
+  if(strcmp(operator, "-") == 0 && token->children_num == 4) {
+    x = -x;
+  }
+
+  for(int i = 3; strstr(token->children[i]->tag, "expression"); i++) {
+    x = eval_operator(x, operator, eval(token->children[i]));
+  }
+
+  return x;
+}
+
 int main(int argc, char **argv) {
 
   puts("Lispy - Type 'exit' to Exit\n");
@@ -21,16 +52,15 @@ int main(int argc, char **argv) {
 
     add_history(input);
 
-    mpc_result_t result;
-    if (mpc_parse("<stdin>", input, lispy_core, &result)) {
-      mpc_ast_print(result.output);
-      mpc_ast_delete(result.output);
+    mpc_result_t parsing_result;
+    if (mpc_parse("<stdin>", input, lispy_core, &parsing_result)) {
+      double evaluation_result = eval(parsing_result.output);
+      printf("%f\n", evaluation_result);
+      mpc_ast_delete(parsing_result.output);
     } else {
-      mpc_err_print(result.error);
-      mpc_err_delete(result.error);
+      mpc_err_print(parsing_result.error);
+      mpc_err_delete(parsing_result.error);
     }
-
-    printf("%s\n", input);
 
     free(input);
   }
