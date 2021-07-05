@@ -1,7 +1,7 @@
 #include "grammar.h"
 #include "lval.h"
-#include "readline.h"
 #include "mpc.h"
+#include "readline.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
 
     mpc_result_t parsing_result;
     if (mpc_parse("<stdin>", input, lispy_core, &parsing_result)) {
-      lval* result = lval_eval(lval_read(parsing_result.output));
+      lval *result = lval_eval(lval_read(parsing_result.output));
       lval_println(result);
       lval_delete(result);
       mpc_ast_delete(parsing_result.output);

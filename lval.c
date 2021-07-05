@@ -89,26 +89,32 @@ lval *lval_read(mpc_ast_t *t) {
 }
 
 lval *lval_eval(lval *v) {
-  if (v->type == LVAL_SEXPRESSION) { return lval_eval_sexpression(v); }
+  if (v->type == LVAL_SEXPRESSION) {
+    return lval_eval_sexpression(v);
+  }
   return v;
 }
 
 lval *lval_eval_sexpression(lval *v) {
-  for(int i = 0; i < v->count; i++) {
+  for (int i = 0; i < v->count; i++) {
     v->cell[i] = lval_eval(v->cell[i]);
   }
 
-  for(int i = 0; i < v->count; i++) {
-    if(v->cell[i]->type == LVAL_ERROR) {
+  for (int i = 0; i < v->count; i++) {
+    if (v->cell[i]->type == LVAL_ERROR) {
       return lval_take(v, i);
     }
   }
 
-  if (v->count == 0) { return v; }
-  if (v->count == 1) { return lval_take(v, 0); }
+  if (v->count == 0) {
+    return v;
+  }
+  if (v->count == 1) {
+    return lval_take(v, 0);
+  }
 
   lval *s = lval_pop(v, 0);
-  if(s->type!= LVAL_SYMBOL) {
+  if (s->type != LVAL_SYMBOL) {
     lval_delete(s);
     lval_delete(v);
     return lval_error("S-Expression does not start with a symbol!");
@@ -119,16 +125,17 @@ lval *lval_eval_sexpression(lval *v) {
   return result;
 }
 
-lval* lval_pop(lval* v, int index) {
-  lval* result = v->cell[index];
-  memmove(&v->cell[index], &v->cell[index + 1], sizeof(lval*) * (v->count - index - 1));
+lval *lval_pop(lval *v, int index) {
+  lval *result = v->cell[index];
+  memmove(&v->cell[index], &v->cell[index + 1],
+          sizeof(lval *) * (v->count - index - 1));
   v->count--;
-  v->cell = realloc(v->cell, sizeof(lval*) * v->count);
+  v->cell = realloc(v->cell, sizeof(lval *) * v->count);
   return result;
 }
 
-lval* lval_take(lval* v, int index) {
-  lval* result = lval_pop(v, index);
+lval *lval_take(lval *v, int index) {
+  lval *result = lval_pop(v, index);
   lval_delete(v);
   return result;
 }
@@ -166,21 +173,21 @@ void lval_delete(lval *v) {
 
 void lval_print(lval *v) {
   switch (v->type) {
-    case LVAL_INTEGER:
-      printf("%li", v->integer);
-      break;
-    case LVAL_DECIMAL:
-      printf("%f", v->decimal);
-      break;
-    case LVAL_SYMBOL:
-      printf("%s", v->symbol);
-      break;
-    case LVAL_ERROR:
-      printf("%s", v->error);
-      break;
-    case LVAL_SEXPRESSION:
-      lval_expression_print(v, '(', ')');
-      break;
+  case LVAL_INTEGER:
+    printf("%li", v->integer);
+    break;
+  case LVAL_DECIMAL:
+    printf("%f", v->decimal);
+    break;
+  case LVAL_SYMBOL:
+    printf("%s", v->symbol);
+    break;
+  case LVAL_ERROR:
+    printf("%s", v->error);
+    break;
+  case LVAL_SEXPRESSION:
+    lval_expression_print(v, '(', ')');
+    break;
   }
 }
 
@@ -189,11 +196,11 @@ void lval_println(lval *v) {
   putchar('\n');
 }
 
-void lval_expression_print(lval* v, char open, char close) {
+void lval_expression_print(lval *v, char open, char close) {
   putchar(open);
   for (int i = 0; i < v->count; i++) {
     lval_print(v->cell[i]);
-    if (i != (v->count-1)) {
+    if (i != (v->count - 1)) {
       putchar(' ');
     }
   }
