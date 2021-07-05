@@ -1,4 +1,6 @@
-number     : /-?-?([0-9]+\.?[0-9]*|[0-9]*\.[0-9]+)+/ ;
+integer    : /-?\d+\b/;
+decimal    : /-?(\d+\.\d*)+/ ;
+number     : <decimal> | <integer> ;
 operator   : '+' | '-' | '*' | '/' ;
 expression : <number> | '(' <operator> <expression>+ ')' ;
 lispy      : /^/ <operator> <expression>+ /$/ ;
