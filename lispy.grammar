@@ -1,6 +1,7 @@
-integer    : /-?\d+\b/;
-decimal    : /-?(\d+\.\d*)+/ ;
-number     : <decimal> | <integer> ;
-operator   : '+' | '-' | '*' | '/' | '%' ;
-expression : <number> | '(' <operator> <expression>+ ')' ;
-lispy      : /^/ <operator> <expression>+ /$/ ;
+integer     : /-?\d+\b/;
+decimal     : /-?(\d+\.\d*)+/ ;
+number      : <decimal> | <integer> ;
+symbol      : '+' | '-' | '*' | '/' | '%' ;
+sexpression : '(' <expression>* ')' ;
+expression  : <number> | <symbol> | <sexpression> ;
+lispy       : /^/ <expression>* /$/ ;
