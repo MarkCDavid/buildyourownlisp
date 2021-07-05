@@ -57,6 +57,15 @@ lval eval_operator(lval x, char *operator, lval y) {
                             : lval_decimal(x.decimal / y.decimal);
     }
   }
+  if (strcmp(operator, "%") == 0) {
+    if (x.type == LVAL_INT) {
+      return y.integer == 0 ? lval_error(LERR_DIV_ZERO)
+                            : lval_integer(x.integer % y.integer);
+    }
+    if (x.type == LVAL_DEC) {
+      return lval_error(LERR_DEC_MOD);
+    }
+  }
 
   return lval_error(LERR_BAD_OP);
 }

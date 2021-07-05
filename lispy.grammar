@@ -1,6 +1,6 @@
 integer    : /-?\d+\b/;
 decimal    : /-?(\d+\.\d*)+/ ;
 number     : <decimal> | <integer> ;
-operator   : '+' | '-' | '*' | '/' ;
+operator   : '+' | '-' | '*' | '/' | '%' ;
 expression : <number> | '(' <operator> <expression>+ ')' ;
 lispy      : /^/ <operator> <expression>+ /$/ ;
