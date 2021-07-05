@@ -12,7 +12,7 @@ struct lval {
 };
 
 enum { LVAL_INT, LVAL_DEC, LVAL_ERR };
-enum { LERR_DIV_ZERO, LERR_DEC_REMAINDER, LERR_BAD_OP, LERR_BAD_NUM };
+enum { LERR_DIV_ZERO, LERR_DEC_MOD, LERR_BAD_OP, LERR_BAD_NUM };
 
 lval lval_integer(long x);
 lval lval_decimal(double x);

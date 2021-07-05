@@ -40,7 +40,7 @@ void lval_print(lval v) {
     if (v.error == LERR_BAD_NUM) {
       printf("Error: Invalid Number!");
     }
-    if (v.error == LERR_DEC_REMAINDER) {
+    if (v.error == LERR_DEC_MOD) {
       printf("Error: Remainder Operation on non Integer!");
     }
     break;
