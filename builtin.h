@@ -18,6 +18,9 @@ lval *builtin_head(lval *x);
 lval *builtin_tail(lval *x);
 lval *builtin_eval(lval *x);
 lval *builtin_join(lval *x);
+lval *builtin_cons(lval *x);
+lval *builtin_len(lval *x);
+lval *builtin_init(lval *x);
 
 lval *builtin_convert_to_decimal(lval *v);
 
