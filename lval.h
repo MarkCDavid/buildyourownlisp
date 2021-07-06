@@ -19,13 +19,14 @@ struct lval {
   };
 };
 
-enum { LVAL_INTEGER, LVAL_DECIMAL, LVAL_SYMBOL, LVAL_ERROR, LVAL_SEXPRESSION };
+enum { LVAL_INTEGER, LVAL_DECIMAL, LVAL_SYMBOL, LVAL_ERROR, LVAL_SEXPRESSION, LVAL_QEXPRESSION };
 
 lval *lval_integer(long integer);
 lval *lval_decimal(double decimal);
 lval *lval_symbol(char *error);
 lval *lval_error(char *error);
 lval *lval_sexpression(void);
+lval *lval_qexpression(void);
 
 lval *lval_read_number(mpc_ast_t *t);
 lval *lval_read(mpc_ast_t *t);

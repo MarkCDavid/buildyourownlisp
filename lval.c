@@ -40,6 +40,14 @@ lval *lval_sexpression(void) {
   return v;
 }
 
+lval *lval_qexpression(void) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_QEXPRESSION;
+  v->cell = NULL;
+  v->count = 0;
+  return v;
+}
+
 lval *lval_read_number(mpc_ast_t *t) {
   if (strstr(t->tag, "decimal")) {
     errno = 0;
@@ -68,8 +76,11 @@ lval *lval_read(mpc_ast_t *t) {
   if (strcmp(t->tag, ">") == 0) {
     result = lval_sexpression();
   }
-  if (strstr(t->tag, "sexpr")) {
+  if (strstr(t->tag, "sexpression")) {
     result = lval_sexpression();
+  }
+  if (strstr(t->tag, "qexpression")) {
+    result = lval_qexpression();
   }
 
   for (int i = 0; i < t->children_num; i++) {
@@ -77,6 +88,12 @@ lval *lval_read(mpc_ast_t *t) {
       continue;
     }
     if (strcmp(t->children[i]->contents, ")") == 0) {
+      continue;
+    }
+    if (strcmp(t->children[i]->contents, "{") == 0) {
+      continue;
+    }
+    if (strcmp(t->children[i]->contents, "}") == 0) {
       continue;
     }
     if (strcmp(t->children[i]->tag, "regex") == 0) {
@@ -162,6 +179,7 @@ void lval_delete(lval *v) {
     break;
 
   case LVAL_SEXPRESSION:
+  case LVAL_QEXPRESSION:
     for (int i = 0; i < v->count; i++) {
       lval_delete(v->cell[i]);
     }
@@ -187,6 +205,9 @@ void lval_print(lval *v) {
     break;
   case LVAL_SEXPRESSION:
     lval_expression_print(v, '(', ')');
+    break;
+  case LVAL_QEXPRESSION:
+    lval_expression_print(v, '{', '}');
     break;
   }
 }

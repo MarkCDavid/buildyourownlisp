@@ -2,6 +2,7 @@ integer     : /-?\d+\b/;
 decimal     : /-?(\d+\.\d*)+/ ;
 number      : <decimal> | <integer> ;
 symbol      : '+' | '-' | '*' | '/' | '%' ;
+qexpression : '{' <expression>* '}' ;
 sexpression : '(' <expression>* ')' ;
-expression  : <number> | <symbol> | <sexpression> ;
+expression  : <number> | <symbol> | <sexpression> | <qexpression> ;
 lispy       : /^/ <expression>* /$/ ;
