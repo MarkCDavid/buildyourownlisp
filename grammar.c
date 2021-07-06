@@ -30,6 +30,6 @@ void lispy_load(void) {
 }
 
 void lispy_cleanup(void) {
-  mpc_cleanup(7, lispy_integer, lispy_decimal, lispy_number, lispy_symbol,
+  mpc_cleanup(8, lispy_integer, lispy_decimal, lispy_number, lispy_symbol,
               lispy_qexpression, lispy_sexpression, lispy_expression, lispy_core);
 }

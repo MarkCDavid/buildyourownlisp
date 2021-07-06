@@ -1,5 +1,6 @@
 #include "lval.h"
-#include "builtin.h"
+#include "lenv.h"
+#include "ltypes.h"
 #include <stdio.h>
 
 lval *lval_integer(long integer) {
@@ -24,11 +25,27 @@ lval *lval_symbol(char *symbol) {
   return v;
 }
 
-lval *lval_error(char *error) {
+lval *lval_function(lbuiltin function, char* name) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_FUNCTION;
+  v->builtin = function;
+  v->builtin_name = malloc(strlen(name) + 1);
+  strcpy(v->builtin_name, name);
+  return v;
+}
+
+lval *lval_error(char *format, ...) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_ERROR;
-  v->error = malloc(strlen(error) + 1);
-  strcpy(v->error, error);
+
+  va_list va;
+  va_start(va, format);
+
+  v->error = malloc(512);
+  vsnprintf(v->error, 511, format, va);
+  v->error = realloc(v->error, strlen(v->error) + 1);
+
+  va_end(va);
   return v;
 }
 
@@ -52,16 +69,20 @@ lval *lval_read_number(mpc_ast_t *t) {
   if (strstr(t->tag, "decimal")) {
     errno = 0;
     double x = strtod(t->contents, NULL);
-    return errno != ERANGE ? lval_decimal(x) : lval_error("invalid number");
+    return errno != ERANGE
+               ? lval_decimal(x)
+               : lval_error("Invalid number format '%s'.", t->contents);
   }
 
   if (strstr(t->tag, "integer")) {
     errno = 0;
     long x = strtol(t->contents, NULL, 10);
-    return errno != ERANGE ? lval_integer(x) : lval_error("invalid number");
+    return errno != ERANGE
+               ? lval_integer(x)
+               : lval_error("Invalid number format '%s'.", t->contents);
   }
 
-  return lval_error("not an integer/decimal");
+  return lval_error("'%s' is not an integer or decimal", t->contents);
 }
 
 lval *lval_read(mpc_ast_t *t) {
@@ -105,16 +126,21 @@ lval *lval_read(mpc_ast_t *t) {
   return result;
 }
 
-lval *lval_eval(lval *v) {
+lval *lval_eval(lenv *e, lval *v) {
+  if (v->type == LVAL_SYMBOL) {
+    lval *r = lenv_get(e, v);
+    lval_delete(v);
+    return r;
+  }
   if (v->type == LVAL_SEXPRESSION) {
-    return lval_eval_sexpression(v);
+    return lval_eval_sexpression(e, v);
   }
   return v;
 }
 
-lval *lval_eval_sexpression(lval *v) {
+lval *lval_eval_sexpression(lenv *e, lval *v) {
   for (int i = 0; i < v->count; i++) {
-    v->cell[i] = lval_eval(v->cell[i]);
+    v->cell[i] = lval_eval(e, v->cell[i]);
   }
 
   for (int i = 0; i < v->count; i++) {
@@ -131,13 +157,15 @@ lval *lval_eval_sexpression(lval *v) {
   }
 
   lval *s = lval_pop(v, 0);
-  if (s->type != LVAL_SYMBOL) {
+  if (s->type != LVAL_FUNCTION) {
     lval_delete(s);
     lval_delete(v);
-    return lval_error("S-Expression does not start with a symbol!");
+    return lval_error(
+        "S-Expression starts with incorrect type! Got %s, Expected %s.",
+        ltype_name(s->type), ltype_name(LVAL_FUNCTION));
   }
 
-  lval *result = builtin(v, s->symbol);
+  lval *result = s->builtin(e, v);
   lval_delete(s);
   return result;
 }
@@ -157,13 +185,13 @@ lval *lval_take(lval *v, int index) {
   return result;
 }
 
-lval *lval_join(lval *x, lval *y) {
-  while (y->count) {
-    x = lval_add(x, lval_pop(y, 0));
+lval *lval_join(lval *t, lval *v) {
+  while (v->count) {
+    t = lval_add(t, lval_pop(v, 0));
   }
 
-  lval_delete(y);
-  return x;
+  lval_delete(v);
+  return t;
 }
 
 lval *lval_add(lval *t, lval *v) {
@@ -177,6 +205,7 @@ void lval_delete(lval *v) {
   switch (v->type) {
   case LVAL_DECIMAL:
   case LVAL_INTEGER:
+  case LVAL_FUNCTION:
     break;
 
   case LVAL_ERROR:
@@ -198,6 +227,47 @@ void lval_delete(lval *v) {
   free(v);
 }
 
+lval *lval_copy(lval *v) {
+
+  lval *r = malloc(sizeof(lval));
+  r->type = v->type;
+
+  switch (v->type) {
+  case LVAL_FUNCTION:
+    r->builtin = v->builtin;
+    r->builtin_name = malloc(strlen(v->builtin_name) + 1);
+    strcpy(r->builtin_name, v->builtin_name);
+    break;
+  case LVAL_DECIMAL:
+    r->decimal = v->decimal;
+    break;
+  case LVAL_INTEGER:
+    r->integer = v->integer;
+    break;
+
+  case LVAL_ERROR:
+    r->error = malloc(strlen(v->error) + 1);
+    strcpy(r->error, v->error);
+    break;
+
+  case LVAL_SYMBOL:
+    r->symbol = malloc(strlen(v->symbol) + 1);
+    strcpy(r->symbol, v->symbol);
+    break;
+
+  case LVAL_SEXPRESSION:
+  case LVAL_QEXPRESSION:
+    r->count = v->count;
+    r->cell = malloc(sizeof(lval *) * r->count);
+    for (int i = 0; i < r->count; i++) {
+      r->cell[i] = lval_copy(v->cell[i]);
+    }
+    break;
+  }
+
+  return r;
+}
+
 void lval_print(lval *v) {
   switch (v->type) {
   case LVAL_INTEGER:
@@ -208,6 +278,9 @@ void lval_print(lval *v) {
     break;
   case LVAL_SYMBOL:
     printf("%s", v->symbol);
+    break;
+  case LVAL_FUNCTION:
+    printf("<function '%s'>", v->builtin_name);
     break;
   case LVAL_ERROR:
     printf("%s", v->error);

@@ -1,7 +1,8 @@
+#include "readline.h"
+#include "mpc.h"
 #include "grammar.h"
 #include "lval.h"
-#include "mpc.h"
-#include "readline.h"
+#include "lenv.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,9 @@ int main(int argc, char **argv) {
   puts("Lispy - Type 'exit' to Exit\n");
 
   lispy_load();
+
+  lenv *env = lenv_new();
+  lenv_add_builtins(env);
 
   while (1) {
 
@@ -24,7 +28,7 @@ int main(int argc, char **argv) {
 
     mpc_result_t parsing_result;
     if (mpc_parse("<stdin>", input, lispy_core, &parsing_result)) {
-      lval *result = lval_eval(lval_read(parsing_result.output));
+      lval *result = lval_eval(env, lval_read(parsing_result.output));
       lval_println(result);
       lval_delete(result);
       mpc_ast_delete(parsing_result.output);
@@ -36,6 +40,7 @@ int main(int argc, char **argv) {
     free(input);
   }
 
+  lenv_delete(env);
   lispy_cleanup();
 
   return 0;

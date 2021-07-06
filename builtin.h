@@ -1,27 +1,27 @@
 #ifndef builtin_h
 #define builtin_h
 
-#include "lval.h"
+#include "ltypes.h"
 
-lval *builtin(lval *v, char *function);
-lval *builtin_operator(lval *v, char *operator);
+lval *builtin_add(lenv* e, lval *v);
+lval *builtin_minus(lenv* e, lval *v);
+lval *builtin_multiply(lenv* e, lval *v);
+lval *builtin_divide(lenv* e, lval *v);
+lval *builtin_modulo(lenv* e, lval *v);
 
-lval *builtin_negate(lval *x);
-lval *builtin_add(lval *x, lval *y);
-lval *builtin_subtract(lval *x, lval *y);
-lval *builtin_multiply(lval *x, lval *y);
-lval *builtin_divide(lval *x, lval *y);
-lval *builtin_modulo(lval *x, lval *y);
+lval *builtin_negate(lenv* e, lval *v);
+lval *builtin_subtract(lenv* e, lval *v);
 
-lval *builtin_list(lval *x);
-lval *builtin_head(lval *x);
-lval *builtin_tail(lval *x);
-lval *builtin_eval(lval *x);
-lval *builtin_join(lval *x);
-lval *builtin_cons(lval *x);
-lval *builtin_len(lval *x);
-lval *builtin_init(lval *x);
+lval *builtin_list(lenv* e, lval *v);
+lval *builtin_head(lenv* e, lval *v);
+lval *builtin_tail(lenv* e, lval *v);
+lval *builtin_eval(lenv* e, lval *v);
+lval *builtin_join(lenv* e, lval *v);
+lval *builtin_cons(lenv* e, lval *v);
+lval *builtin_len(lenv* e, lval *v);
+lval *builtin_init(lenv* e, lval *v);
+lval *builtin_def(lenv* e, lval *v);
 
-lval *builtin_convert_to_decimal(lval *v);
+lval *builtin_convert_to_decimal_if_required(lval *t, lval *c);
 
 #endif

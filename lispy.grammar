@@ -1,9 +1,7 @@
 integer     : /-?\d+\b/;
 decimal     : /-?(\d+\.\d*)+/ ;
 number      : <decimal> | <integer> ;
-symbol      : '+' | '-' | '*' | '/' | '%' 
-            | "list" | "head" | "tail" | "eval" 
-            | "join" | "cons" | "len"  | "init";
+symbol      : /[a-zA-Z0-9_+\-*\/\\=<>!&\|]+/ ;
 qexpression : '{' <expression>* '}' ;
 sexpression : '(' <expression>* ')' ;
 expression  : <number> | <symbol> | <sexpression> | <qexpression> ;
