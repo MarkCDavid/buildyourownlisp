@@ -1,4 +1,29 @@
+#include "macros.h"
 #include "builtin.h"
+
+lval *builtin(lval *v, char *function) {
+  if (strcmp("list", function) == 0) {
+    return builtin_list(v);
+  }
+  if (strcmp("head", function) == 0) {
+    return builtin_head(v);
+  }
+  if (strcmp("tail", function) == 0) {
+    return builtin_tail(v);
+  }
+  if (strcmp("join", function) == 0) {
+    return builtin_join(v);
+  }
+  if (strcmp("eval", function) == 0) {
+    return builtin_eval(v);
+  }
+  if (strstr("+-/*%", function)) {
+    return builtin_operator(v, function);
+  }
+
+  lval_delete(v);
+  return lval_error("Unknown function!");
+}
 
 lval *builtin_operator(lval *v, char *operator) {
   for (int i = 0; i < v->count; i++) {
@@ -123,6 +148,58 @@ lval *builtin_modulo(lval *x, lval *y) {
   }
 
   return x;
+}
+
+
+lval *builtin_list(lval *x) {
+  x->type = LVAL_QEXPRESSION;
+  return x;
+}
+
+lval *builtin_head(lval *x) {
+  LASSERT_ARG_COUNT(x, 1, "Function 'head' passed too many arguments!");
+  LASSERT_TYPE(x, 0, LVAL_QEXPRESSION, "Function 'head' passed incorrect type!");
+  LASSERT_NOT_EMPTY(x, 0, "Function 'head' passed {}!");
+
+  lval *r = lval_take(x, 0);
+  while (r->count > 1) { 
+    lval_delete(lval_pop(r, 1));
+  }
+  return r;
+}
+
+lval *builtin_tail(lval *x) {
+  LASSERT_ARG_COUNT(x, 1, "Function 'tail' passed too many arguments!");
+  LASSERT_TYPE(x, 0, LVAL_QEXPRESSION, "Function 'tail' passed incorrect type!");
+  LASSERT_NOT_EMPTY(x, 0, "Function 'tail' passed {}!");
+
+  lval *r = lval_take(x, 0);
+  lval_delete(lval_pop(r, 0));
+  return r;
+}
+
+lval *builtin_eval(lval *x) {
+  LASSERT_ARG_COUNT(x, 1, "Function 'eval' passed too many arguments!");
+  LASSERT_TYPE(x, 0, LVAL_QEXPRESSION, "Function 'eval' passed incorrect type!");
+
+  lval *r = lval_take(x, 0);
+  r->type = LVAL_SEXPRESSION;
+  return lval_eval(r);
+
+}
+
+lval *builtin_join(lval *x) {
+  for(int i = 0; i < x->count; i++) {
+    LASSERT_TYPE(x, i, LVAL_QEXPRESSION, "Function 'join' passed incorrect type!");
+  }
+
+  lval* r = lval_pop(x, 0);
+  while(x->count) {
+    r = lval_join(r, lval_pop(x, 0));
+  }
+
+  lval_delete(x);
+  return r;
 }
 
 lval *builtin_convert_to_decimal(lval *v) {

@@ -1,7 +1,8 @@
 integer     : /-?\d+\b/;
 decimal     : /-?(\d+\.\d*)+/ ;
 number      : <decimal> | <integer> ;
-symbol      : '+' | '-' | '*' | '/' | '%' ;
+symbol      : '+' | '-' | '*' | '/' | '%' 
+            | "list" | "head" | "tail" | "eval" | "join" ;
 qexpression : '{' <expression>* '}' ;
 sexpression : '(' <expression>* ')' ;
 expression  : <number> | <symbol> | <sexpression> | <qexpression> ;

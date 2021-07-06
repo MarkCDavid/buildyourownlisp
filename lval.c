@@ -137,7 +137,7 @@ lval *lval_eval_sexpression(lval *v) {
     return lval_error("S-Expression does not start with a symbol!");
   }
 
-  lval *result = builtin_operator(v, s->symbol);
+  lval *result = builtin(v, s->symbol);
   lval_delete(s);
   return result;
 }
@@ -155,6 +155,15 @@ lval *lval_take(lval *v, int index) {
   lval *result = lval_pop(v, index);
   lval_delete(v);
   return result;
+}
+
+lval *lval_join(lval *x, lval *y) {
+  while (y->count) {
+    x = lval_add(x, lval_pop(y, 0));
+  }
+
+  lval_delete(y);
+  return x;
 }
 
 lval *lval_add(lval *t, lval *v) {

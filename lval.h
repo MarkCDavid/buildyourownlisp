@@ -36,6 +36,7 @@ lval *lval_eval_sexpression(lval *v);
 
 lval *lval_pop(lval *v, int index);
 lval *lval_take(lval *v, int index);
+lval *lval_join(lval *x, lval *y);
 
 lval *lval_add(lval *t, lval *v);
 
