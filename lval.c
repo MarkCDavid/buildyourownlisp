@@ -1,4 +1,5 @@
 #include "lval.h"
+#include "builtin.h"
 #include "lenv.h"
 #include "ltypes.h"
 #include <stdio.h>
@@ -25,7 +26,7 @@ lval *lval_symbol(char *symbol) {
   return v;
 }
 
-lval *lval_function(lbuiltin function, char* name) {
+lval *lval_function(lbuiltin function, char *name) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_FUNCTION;
   v->builtin = function;
@@ -54,6 +55,15 @@ lval *lval_sexpression(void) {
   v->type = LVAL_SEXPRESSION;
   v->cell = NULL;
   v->count = 0;
+  return v;
+}
+
+lval *lval_lambda(lval *formals, lval *body) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_FUNCTION;
+  v->environment = lenv_new();
+  v->formals = formals;
+  v->body = body;
   return v;
 }
 
@@ -156,18 +166,83 @@ lval *lval_eval_sexpression(lenv *e, lval *v) {
     return lval_take(v, 0);
   }
 
-  lval *s = lval_pop(v, 0);
-  if (s->type != LVAL_FUNCTION) {
-    lval_delete(s);
+  lval *f = lval_pop(v, 0);
+  if (f->type != LVAL_FUNCTION) {
+    lval_delete(f);
     lval_delete(v);
     return lval_error(
         "S-Expression starts with incorrect type! Got %s, Expected %s.",
-        ltype_name(s->type), ltype_name(LVAL_FUNCTION));
+        ltype_name(f->type), ltype_name(LVAL_FUNCTION));
   }
 
-  lval *result = s->builtin(e, v);
-  lval_delete(s);
+  lval *result = lval_call(e, f, v);
+  lval_delete(f);
   return result;
+}
+
+lval *lval_call(lenv *e, lval *f, lval *a) {
+  if (f->builtin) {
+    return f->builtin(e, a);
+  }
+
+  int given = a->count;
+  int total = f->formals->count;
+
+  while (a->count) {
+    if (f->formals->count == 0) {
+      lval_delete(a);
+      return lval_error("Function passed too many arguments. "
+                        "Got %i, Expected %i.",
+                        given, total);
+    }
+
+    lval *symbol = lval_pop(f->formals, 0);
+
+    if(strcmp(symbol->symbol, "&") == 0) {
+      if(f->formals->count != 1) {
+        lval_delete(a);
+        return lval_error("Function format invalid. "
+          "Symbol '&' not follow by single symbol.");
+      }
+
+      lval *nsymbols = lval_pop(f->formals, 0);
+      lenv_put(f->environment, nsymbols, builtin_list(e, a));
+      lval_delete(symbol);
+      lval_delete(nsymbols);
+      break;
+    }
+
+    lval *value = lval_pop(a, 0);
+    lenv_put(f->environment, symbol, value);
+    lval_delete(symbol);
+    lval_delete(value);
+  }
+  
+  lval_delete(a);
+
+  if(f->formals->count > 0 && strcmp(f->formals->cell[0]->symbol, "&") == 0) {
+    if(f->formals->count != 2) {
+        return lval_error("Function format invalid. "
+          "Symbol '&' not follow by single symbol.");
+    }
+    lval_delete(lval_pop(f->formals, 0));
+
+    lval* symbol = lval_pop(f->formals, 0);
+    lval* value = lval_qexpression();
+
+    lenv_put(f->environment, symbol, value);
+    lval_delete(symbol);
+    lval_delete(value);
+  }
+
+
+  if (f->formals->count == 0) {
+    f->environment->parent = e;
+    return builtin_eval(f->environment,
+                        lval_add(lval_sexpression(), lval_copy(f->body)));
+  } else {
+    return lval_copy(f);
+  }
 }
 
 lval *lval_pop(lval *v, int index) {
@@ -205,7 +280,14 @@ void lval_delete(lval *v) {
   switch (v->type) {
   case LVAL_DECIMAL:
   case LVAL_INTEGER:
+    break;
+
   case LVAL_FUNCTION:
+    if (!v->builtin) {
+      lenv_delete(v->environment);
+      lval_delete(v->formals);
+      lval_delete(v->body);
+    }
     break;
 
   case LVAL_ERROR:
@@ -234,9 +316,16 @@ lval *lval_copy(lval *v) {
 
   switch (v->type) {
   case LVAL_FUNCTION:
-    r->builtin = v->builtin;
-    r->builtin_name = malloc(strlen(v->builtin_name) + 1);
-    strcpy(r->builtin_name, v->builtin_name);
+    if (v->builtin) {
+      r->builtin = v->builtin;
+      r->builtin_name = malloc(strlen(v->builtin_name) + 1);
+      strcpy(r->builtin_name, v->builtin_name);
+    } else {
+      r->builtin = NULL;
+      r->environment = lenv_copy(v->environment);
+      r->formals = lval_copy(v->formals);
+      r->body = lval_copy(v->body);
+    }
     break;
   case LVAL_DECIMAL:
     r->decimal = v->decimal;
@@ -280,7 +369,7 @@ void lval_print(lval *v) {
     printf("%s", v->symbol);
     break;
   case LVAL_FUNCTION:
-    printf("<function '%s'>", v->builtin_name);
+    lval_function_print(v);
     break;
   case LVAL_ERROR:
     printf("%s", v->error);
@@ -303,6 +392,40 @@ void lval_expression_print(lval *v, char open, char close) {
   putchar(open);
   for (int i = 0; i < v->count; i++) {
     lval_print(v->cell[i]);
+    if (i != (v->count - 1)) {
+      putchar(' ');
+    }
+  }
+  putchar(close);
+}
+
+void lval_function_print(lval *v) {
+  if (v->builtin) {
+    printf("<function '%s'>", v->builtin_name);
+  } else {
+    printf("{\\ ");
+    lval_print(v->formals);
+    putchar(' ');
+    lval_function_body_print(v->environment, v->body, '{', '}');
+    putchar(')');
+  }
+}
+
+void lval_function_body_print(lenv *e, lval *v, char open, char close) {
+  putchar(open);
+  for (int i = 0; i < v->count; i++) {
+    if(v->cell[i]->type == LVAL_SYMBOL) {
+      lval *b = lenv_get(e, v->cell[i]);
+      b->type == LVAL_ERROR ? lval_print(v->cell[i]) : lval_print(b);
+      lval_delete(b);
+    } else if (v->cell[i]->type == LVAL_SEXPRESSION) {
+      lval_function_body_print(e, v->cell[i], '(', ')');
+    } else if (i > 0 && v->cell[i]->type == LVAL_QEXPRESSION && v->cell[i - 1]->type == LVAL_SYMBOL && strcmp("eval", v->cell[i - 1]->symbol) == 0) {
+      lval_function_body_print(e, v->cell[i], '{', '}');
+    } else {
+      lval_print(v->cell[i]);
+    }
+
     if (i != (v->count - 1)) {
       putchar(' ');
     }

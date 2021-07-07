@@ -5,10 +5,25 @@
 
 lenv *lenv_new(void) {
   lenv *env = malloc(sizeof(lenv));
+  env->parent = NULL;
   env->count = 0;
   env->symbols = NULL;
   env->values = NULL;
   return env;
+}
+
+lenv *lenv_copy(lenv *env) {
+  lenv *r = malloc(sizeof(lenv));
+  r->parent = env->parent;
+  r->count = env->count;
+  r->symbols = malloc(sizeof(char*) * r->count);
+  r->values = malloc(sizeof(char*) * r->count);
+  for(int i = 0; i < r->count; i++) {
+    r->symbols[i] = malloc(strlen(env->symbols[i]) + 1);
+    strcpy(r->symbols[i], env->symbols[i]);
+    r->values[i] = lval_copy(env->values[i]);
+  }
+  return r;
 }
 
 void lenv_delete(lenv *env) {
@@ -28,7 +43,12 @@ lval *lenv_get(lenv *env, lval *key) {
       return lval_copy(env->values[i]);
     }
   }
-  return lval_error("Unbound symbol '%s'!", key->symbol);
+
+  if(env->parent) {
+    return lenv_get(env->parent, key);
+  } else {
+    return lval_error("Unbound symbol '%s'!", key->symbol);
+  }
 }
 
 void lenv_put(lenv *env, lval *key, lval *value) {
@@ -49,6 +69,13 @@ void lenv_put(lenv *env, lval *key, lval *value) {
   strcpy(env->symbols[env->count - 1], key->symbol);
 }
 
+void lenv_def(lenv* env, lval* key, lval* value) {
+  while(env->parent) {
+    env = env->parent;
+  }
+  lenv_put(env, key, value);
+}
+
 void lenv_add_builtins(lenv *env) {
   lenv_add_builtin(env, "list", builtin_list);
   lenv_add_builtin(env, "head", builtin_head);
@@ -58,7 +85,12 @@ void lenv_add_builtins(lenv *env) {
   lenv_add_builtin(env, "cons", builtin_cons);
   lenv_add_builtin(env, "len", builtin_len);
   lenv_add_builtin(env, "init", builtin_init);
+  lenv_add_builtin(env, "\\", builtin_lambda);
+
+
   lenv_add_builtin(env, "def", builtin_def);
+  lenv_add_builtin(env, "=", builtin_put);
+  lenv_add_builtin(env, "fun", builtin_fun);
 
   lenv_add_builtin(env, "+", builtin_add);
   lenv_add_builtin(env, "-", builtin_minus);
@@ -74,3 +106,20 @@ void lenv_add_builtin(lenv *env, char *name, lbuiltin function) {
   lval_delete(key);
   lval_delete(value);
 }
+
+
+lval *lenv_has_builtins(lenv *env, lval* symbols) {
+ for (int i = 0; i < symbols->count; i++) {
+    lval *builtin = lenv_get(env, symbols->cell[i]);
+
+    if (builtin->type == LVAL_ERROR) {
+      lval_delete(builtin);
+    }
+
+    if (builtin->type == LVAL_FUNCTION && builtin->builtin) {
+      return lval_copy(builtin);
+    }
+  }
+  return NULL;
+}
+

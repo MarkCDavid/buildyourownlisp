@@ -16,8 +16,8 @@ struct lval {
   union {
     long integer;
     double decimal;
-    struct lval **cell;
     lbuiltin builtin;
+    struct lval **cell;
   };
 
   union 
@@ -26,10 +26,14 @@ struct lval {
     char *symbol;
     char *builtin_name;
   };
-  
+
+  lenv* environment;
+  lval* formals;
+  lval* body;
 };
 
 struct lenv {
+  lenv* parent;
   int count;
   char** symbols;
   lval** values;

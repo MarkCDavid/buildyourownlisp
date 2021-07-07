@@ -20,7 +20,12 @@ lval *builtin_join(lenv* e, lval *v);
 lval *builtin_cons(lenv* e, lval *v);
 lval *builtin_len(lenv* e, lval *v);
 lval *builtin_init(lenv* e, lval *v);
+lval *builtin_lambda(lenv* e, lval *v);
+
 lval *builtin_def(lenv* e, lval *v);
+lval *builtin_put(lenv* e, lval *v);
+lval *builtin_variable(lenv* e, lval *v, char* function);
+lval *builtin_fun(lenv* e, lval *v);
 
 lval *builtin_convert_to_decimal_if_required(lval *t, lval *c);
 
