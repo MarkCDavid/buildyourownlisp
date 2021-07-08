@@ -406,29 +406,7 @@ void lval_function_print(lval *v) {
     printf("{\\ ");
     lval_print(v->formals);
     putchar(' ');
-    lval_function_body_print(v->environment, v->body, '{', '}');
+    lval_print(v->body);
     putchar(')');
   }
-}
-
-void lval_function_body_print(lenv *e, lval *v, char open, char close) {
-  putchar(open);
-  for (int i = 0; i < v->count; i++) {
-    if(v->cell[i]->type == LVAL_SYMBOL) {
-      lval *b = lenv_get(e, v->cell[i]);
-      b->type == LVAL_ERROR ? lval_print(v->cell[i]) : lval_print(b);
-      lval_delete(b);
-    } else if (v->cell[i]->type == LVAL_SEXPRESSION) {
-      lval_function_body_print(e, v->cell[i], '(', ')');
-    } else if (i > 0 && v->cell[i]->type == LVAL_QEXPRESSION && v->cell[i - 1]->type == LVAL_SYMBOL && strcmp("eval", v->cell[i - 1]->symbol) == 0) {
-      lval_function_body_print(e, v->cell[i], '{', '}');
-    } else {
-      lval_print(v->cell[i]);
-    }
-
-    if (i != (v->count - 1)) {
-      putchar(' ');
-    }
-  }
-  putchar(close);
 }

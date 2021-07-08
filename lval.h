@@ -32,6 +32,5 @@ void lval_print(lval *v);
 void lval_println(lval *v);
 void lval_expression_print(lval *v, char open, char close);
 void lval_function_print(lval *v);
-void lval_function_body_print(lenv *e, lval *v, char open, char close);
 
 #endif
