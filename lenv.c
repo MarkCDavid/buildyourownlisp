@@ -92,6 +92,20 @@ void lenv_add_builtins(lenv *env) {
   lenv_add_builtin(env, "=", builtin_put);
   lenv_add_builtin(env, "fun", builtin_fun);
 
+  lenv_add_builtin(env, ">", builtin_greater_than);
+  lenv_add_builtin(env, "<", builtin_less_than);
+  lenv_add_builtin(env, ">=", builtin_greater_than_or_equals);
+  lenv_add_builtin(env, "<=", builtin_less_than_or_equals);
+
+  lenv_add_builtin(env, "==", builtin_equals);
+  lenv_add_builtin(env, "!=", builtin_not_equals);
+
+  lenv_add_builtin(env, "!", builtin_not);
+  lenv_add_builtin(env, "&&", builtin_and);
+  lenv_add_builtin(env, "||", builtin_or);
+
+  lenv_add_builtin(env, "if", builtin_if);
+
   lenv_add_builtin(env, "+", builtin_add);
   lenv_add_builtin(env, "-", builtin_minus);
   lenv_add_builtin(env, "*", builtin_multiply);

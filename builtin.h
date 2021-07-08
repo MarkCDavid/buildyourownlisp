@@ -22,6 +22,23 @@ lval *builtin_len(lenv* e, lval *v);
 lval *builtin_init(lenv* e, lval *v);
 lval *builtin_lambda(lenv* e, lval *v);
 
+lval *builtin_greater_than(lenv* e, lval *v);
+lval *builtin_less_than(lenv* e, lval *v);
+lval *builtin_greater_than_or_equals(lenv* e, lval *v);
+lval *builtin_less_than_or_equals(lenv* e, lval *v);
+lval *builtin_ordinal(lenv* e, lval *v, char* operator);
+
+lval *builtin_equals(lenv* e, lval *v);
+lval *builtin_not_equals(lenv* e, lval *v);
+
+lval *builtin_not(lenv* e, lval *v);
+lval *builtin_and(lenv* e, lval *v);
+lval *builtin_or(lenv* e, lval *v);
+
+lval *builtin_comparison(lenv* e, lval *v, char* operator);
+
+lval *builtin_if(lenv* e, lval *v);
+
 lval *builtin_def(lenv* e, lval *v);
 lval *builtin_put(lenv* e, lval *v);
 lval *builtin_variable(lenv* e, lval *v, char* function);

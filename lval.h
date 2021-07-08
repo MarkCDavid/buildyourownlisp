@@ -26,6 +26,9 @@ lval *lval_take(lval *v, int index);
 lval *lval_add(lval *t, lval *v);
 lval *lval_join(lval *t, lval *v);
 
+int lval_equal(lval *x, lval *y);
+int lval_equal_number(lval *x, lval *y);
+
 void lval_delete(lval *v);
 lval *lval_copy(lval *v);
 void lval_print(lval *v);

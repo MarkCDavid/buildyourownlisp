@@ -293,6 +293,164 @@ lval *builtin_lambda(lenv *e, lval *v) {
   return lval_lambda(formals, body);
 }
 
+lval *builtin_greater_than(lenv* e, lval *v) {
+  return builtin_ordinal(e, v, ">");
+}
+
+lval *builtin_less_than(lenv* e, lval *v) {
+  return builtin_ordinal(e, v, "<");
+}
+
+lval *builtin_greater_than_or_equals(lenv* e, lval *v) {
+  return builtin_ordinal(e, v, ">=");
+}
+
+lval *builtin_less_than_or_equals(lenv* e, lval *v) {
+  return builtin_ordinal(e, v, "<=");
+}
+
+lval *builtin_ordinal(lenv* e, lval *v, char *function) {
+  LASSERT_ARG_COUNT(function, v, 2);
+  LASSERT_TYPE(function, v, 0, LVAL_NUMBER);
+  LASSERT_TYPE(function, v, 1, LVAL_NUMBER);
+
+  lval* x = lval_pop(v, 0);
+  lval* y = lval_pop(v, 0);
+
+  x = builtin_convert_to_decimal_if_required(x, y);
+  y = builtin_convert_to_decimal_if_required(y, x);
+
+  int result;
+  if(strcmp(function, ">") == 0) {
+    if(x->type == LVAL_INTEGER) {
+      result = (x->integer > y->integer);
+    }
+    if(x->type == LVAL_DECIMAL) {
+      result = (x->decimal > y->decimal);
+    }
+  }
+  if(strcmp(function, "<") == 0) {
+    if(x->type == LVAL_INTEGER) {
+      result = (x->integer < y->integer);
+    }
+    if(x->type == LVAL_DECIMAL) {
+      result = (x->decimal < y->decimal);
+    }
+  }
+  if(strcmp(function, ">=") == 0) {
+    if(x->type == LVAL_INTEGER) {
+      result = (x->integer <= y->integer);
+    }
+    if(x->type == LVAL_DECIMAL) {
+      result = (x->decimal <= y->decimal);
+    }
+  }
+  if(strcmp(function, "<=") == 0) {
+    if(x->type == LVAL_INTEGER) {
+      result = (x->integer <= y->integer);
+    }
+    if(x->type == LVAL_DECIMAL) {
+      result = (x->decimal <= y->decimal);
+    }
+  }
+
+  lval_delete(x);
+  lval_delete(y);
+  lval_delete(v);
+  return lval_integer(result);
+}
+
+lval *builtin_equals(lenv* e, lval *v) {
+  return builtin_comparison(e, v, "==");
+}
+
+lval *builtin_not_equals(lenv* e, lval *v) {
+  return builtin_comparison(e, v, "!=");
+}
+
+lval *builtin_comparison(lenv* e, lval *v, char* operator) {
+  LASSERT_ARG_COUNT(operator, v, 2);
+  
+  int result;
+  if(strcmp(operator, "==") == 0) {
+    result = lval_equal(v->cell[0], v->cell[1]);
+  }
+  if(strcmp(operator, "!=") == 0) {
+    result = !lval_equal(v->cell[0], v->cell[1]);
+  }
+  lval_delete(v);
+  return lval_integer(result);
+}
+
+
+lval *builtin_not(lenv* e, lval *v) {
+  LASSERT_ARG_COUNT("!", v, 1);
+  LASSERT_TYPE("!", v, 0, LVAL_INTEGER);
+
+  lval *result = lval_pop(v, 0);
+  result->integer = result->integer ? 0 : 1;
+
+  lval_delete(v);
+  return result;
+}
+
+
+lval *builtin_and(lenv* e, lval *v) {
+  LASSERT_ARG_COUNT_AT_LEAST("&&", v, 2);
+  for(int i = 0; i < v->count; i++) {
+    LASSERT_TYPE("&&", v, i, LVAL_INTEGER);
+  }
+
+  lval *x = lval_pop(v, 0);
+
+  while(v->count) {
+    lval *y = lval_pop(v, 0);
+    x->integer = x->integer && y->integer;
+    lval_delete(y);
+  }
+
+  lval_delete(v);
+  return x;
+}
+
+lval *builtin_or(lenv* e, lval *v) {
+  LASSERT_ARG_COUNT_AT_LEAST("||", v, 2);
+  for(int i = 0; i < v->count; i++) {
+    LASSERT_TYPE("||", v, i, LVAL_INTEGER);
+  }
+
+  lval *x = lval_pop(v, 0);
+
+  while(v->count) {
+    lval *y = lval_pop(v, 0);
+    x->integer = x->integer || y->integer;
+    lval_delete(y);
+  }
+
+  lval_delete(v);
+  return x;
+}
+
+lval *builtin_if(lenv* e, lval *v) {
+  LASSERT_ARG_COUNT("if", v, 3);
+  LASSERT_TYPE("if", v, 0, LVAL_INTEGER);
+  LASSERT_TYPE("if", v, 1, LVAL_QEXPRESSION);
+  LASSERT_TYPE("if", v, 2, LVAL_QEXPRESSION);
+
+  v->cell[1]->type = LVAL_SEXPRESSION;
+  v->cell[2]->type = LVAL_SEXPRESSION;
+
+  lval* result;
+  if(v->cell[0]->integer) {
+    result = lval_eval(e, lval_pop(v, 1));  
+  } else {
+    result = lval_eval(e, lval_pop(v, 2));
+  }
+
+  lval_delete(v);
+  return result;
+}
+
 lval *builtin_def(lenv *e, lval *v) { return builtin_variable(e, v, "def"); }
 
 lval *builtin_put(lenv *e, lval *v) { return builtin_variable(e, v, "="); }

@@ -10,12 +10,12 @@
 
 #define LASSERT_ARG_COUNT(function, arguments, number) \
   LASSERT(arguments, arguments->count == number, \
-    "Function '%s' passed incorrect number of arguments! Got %s, Expected %s." \
+    "Function '%s' passed incorrect number of arguments! Got %i, Expected %i.", \
     function, v->count, number);
 
 #define LASSERT_ARG_COUNT_AT_LEAST(function, arguments, number) \
   LASSERT(arguments, arguments->count >= number, \
-    "Function '%s' passed incorrect number of arguments! Got %s, Expected >=%s." \
+    "Function '%s' passed incorrect number of arguments! Got %i, Expected >=%i.", \
     function, v->count, number);
 
 #define LASSERT_TYPE(function, arguments, index, expected) \
@@ -30,6 +30,6 @@
 #define LASSERT_DEF_COUNT(function, arguments, symbols) \
   LASSERT(arguments, symbols->count == arguments->count - 1, \
     "Function '%s'cannot define incorrect number of values to symbols! " \
-    "Got %s, Expected %s.", function, symbols->count, arguments->count - 1);
+    "Got %i, Expected %i.", function, symbols->count, arguments->count - 1);
 
 #endif

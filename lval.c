@@ -269,6 +269,71 @@ lval *lval_join(lval *t, lval *v) {
   return t;
 }
 
+
+
+int lval_equal(lval *x, lval *y) {
+
+  if((x->type & LVAL_NUMBER) && (y->type & LVAL_NUMBER)) {
+    return lval_equal_number(x, y);
+  }
+
+  if(x->type != y->type) {
+    return 0;
+  }
+
+  switch (x->type)
+  {
+    case LVAL_INTEGER:
+    case LVAL_DECIMAL:
+      return 0;
+
+    case LVAL_ERROR:
+      return (strcmp(x->error, y->error) == 0);
+    case LVAL_SYMBOL:
+      return (strcmp(x->symbol, y->symbol) == 0);
+    case LVAL_FUNCTION:
+      if (x->builtin || y->builtin) {
+        return x->builtin == y->builtin;
+      } else {
+        return lval_equal(x->formals, y->formals) && lval_equal(x->body, y->body);
+      }
+    case LVAL_QEXPRESSION:
+    case LVAL_SEXPRESSION:
+      if (x->count != y->count) {
+        return 0;
+      }
+      for(int i =0 ; i < x->count; i++) {
+        if(!lval_equal(x->cell[i], y->cell[i])) {
+          return 0;
+        }
+      }
+      return 1;
+  }
+  return 0;
+}
+
+
+int lval_equal_number(lval *x, lval *y) {
+  lval* xc = lval_copy(x);
+  lval* yc = lval_copy(y);
+
+  xc = builtin_convert_to_decimal_if_required(xc, yc);
+  yc = builtin_convert_to_decimal_if_required(yc, xc);
+
+  int result = 0;
+  if(xc->type == LVAL_INTEGER) {
+    result = xc->integer == yc->integer;
+  }
+  if(xc->type == LVAL_DECIMAL) {
+    result = xc->decimal == yc->decimal;
+  }
+
+  lval_delete(xc);
+  lval_delete(yc);
+
+  return result;
+}
+
 lval *lval_add(lval *t, lval *v) {
   t->count++;
   t->cell = realloc(t->cell, sizeof(lval *) * t->count);
