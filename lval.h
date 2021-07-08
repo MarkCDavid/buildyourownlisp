@@ -3,17 +3,23 @@
 
 #include "ltypes.h"
 #include "mpc.h"
+#include <stdio.h>
 
 lval *lval_integer(long integer);
 lval *lval_decimal(double decimal);
 lval *lval_symbol(char *symbol);
+lval *lval_string(char *string);
 lval *lval_function(lbuiltin function, char *name);
 lval *lval_error(char *format, ...);
 lval *lval_sexpression(void);
 lval *lval_qexpression(void);
 lval *lval_lambda(lval *formals, lval *body);
+lval *lval_exit(long exit_code);
+lval *lval_file(FILE *file, char* file_name, char* mode);
+lval *lval_ok(void);
 
 lval *lval_read_number(mpc_ast_t *t);
+lval *lval_read_string(mpc_ast_t *t);
 lval *lval_read(mpc_ast_t *t);
 
 lval *lval_eval(lenv *e, lval *v);
@@ -35,5 +41,7 @@ void lval_print(lval *v);
 void lval_println(lval *v);
 void lval_expression_print(lval *v, char open, char close);
 void lval_function_print(lval *v);
+void lval_string_print(lval *v);
+void lval_string_show(lval *v);
 
 #endif

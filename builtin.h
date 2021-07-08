@@ -21,6 +21,16 @@ lval *builtin_cons(lenv* e, lval *v);
 lval *builtin_len(lenv* e, lval *v);
 lval *builtin_init(lenv* e, lval *v);
 lval *builtin_lambda(lenv* e, lval *v);
+lval *builtin_read(lenv* e, lval *v);
+lval *builtin_print(lenv* e, lval *v);
+lval *builtin_show(lenv* e, lval *v);
+lval *builtin_error(lenv* e, lval *v);
+lval *builtin_exit(lenv* e, lval *v);
+
+lval *builtin_file_open(lenv* e, lval *v);
+lval *builtin_file_close(lenv* e, lval *v);
+lval *builtin_file_read(lenv* e, lval *v);
+lval *builtin_file_write(lenv* e, lval *v);
 
 lval *builtin_greater_than(lenv* e, lval *v);
 lval *builtin_less_than(lenv* e, lval *v);
@@ -45,5 +55,7 @@ lval *builtin_variable(lenv* e, lval *v, char* function);
 lval *builtin_fun(lenv* e, lval *v);
 
 lval *builtin_convert_to_decimal_if_required(lval *t, lval *c);
+
+lval *builtin_load(lenv* e, lval *v);
 
 #endif

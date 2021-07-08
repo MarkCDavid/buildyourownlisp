@@ -26,6 +26,14 @@ lval *lval_symbol(char *symbol) {
   return v;
 }
 
+lval *lval_string(char *string) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_STRING;
+  v->string = malloc(strlen(string) + 1);
+  strcpy(v->string, string);
+  return v;
+}
+
 lval *lval_function(lbuiltin function, char *name) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_FUNCTION;
@@ -75,6 +83,30 @@ lval *lval_qexpression(void) {
   return v;
 }
 
+lval *lval_exit(long exit_code) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_EXIT;
+  v->exit_code = exit_code;
+  return v;
+}
+
+lval *lval_file(FILE *file, char* file_name, char* mode) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_FILE;
+  v->file = file;
+  v->file_name = malloc(strlen(file_name) + 1);
+  strcpy(v->file_name, file_name);
+  v->mode = malloc(strlen(mode) + 1);
+  strcpy(v->mode, mode);
+  return v;
+}
+
+lval *lval_ok(void) {
+  lval *v = malloc(sizeof(lval));
+  v->type = LVAL_OK;
+  return v;
+}
+
 lval *lval_read_number(mpc_ast_t *t) {
   if (strstr(t->tag, "decimal")) {
     errno = 0;
@@ -95,12 +127,26 @@ lval *lval_read_number(mpc_ast_t *t) {
   return lval_error("'%s' is not an integer or decimal", t->contents);
 }
 
+
+lval *lval_read_string(mpc_ast_t *t) {
+  t->contents[strlen(t->contents) - 1] = '\0';
+  char* unescaped_string = malloc(strlen(t->contents + 1) + 1);
+  strcpy(unescaped_string, t->contents + 1);
+  unescaped_string = mpcf_unescape(unescaped_string);
+  lval* string = lval_string(unescaped_string);
+  free(unescaped_string);
+  return string;
+}
+
 lval *lval_read(mpc_ast_t *t) {
   if (strstr(t->tag, "number")) {
     return lval_read_number(t);
   }
   if (strstr(t->tag, "symbol")) {
     return lval_symbol(t->contents);
+  }
+  if (strstr(t->tag, "string")) {
+    return lval_read_string(t);
   }
 
   lval *result = NULL;
@@ -129,6 +175,9 @@ lval *lval_read(mpc_ast_t *t) {
     }
     if (strcmp(t->children[i]->tag, "regex") == 0) {
       continue;
+    }
+    if (strstr(t->children[i]->tag, "comment")) { 
+      continue; 
     }
     result = lval_add(result, lval_read(t->children[i]));
   }
@@ -287,10 +336,20 @@ int lval_equal(lval *x, lval *y) {
     case LVAL_DECIMAL:
       return 0;
 
+    case LVAL_OK:
+      return 1;
+
+    case LVAL_EXIT:
+      return x->exit_code == y->exit_code;
+
+    case LVAL_FILE:
+      return x->file == y->file && (strcmp(x->file_name, y->file_name) == 0) && (strcmp(x->mode, y->mode) == 0);
     case LVAL_ERROR:
       return (strcmp(x->error, y->error) == 0);
     case LVAL_SYMBOL:
       return (strcmp(x->symbol, y->symbol) == 0);
+    case LVAL_STRING:
+      return (strcmp(x->string, y->string) == 0);
     case LVAL_FUNCTION:
       if (x->builtin || y->builtin) {
         return x->builtin == y->builtin;
@@ -345,6 +404,8 @@ void lval_delete(lval *v) {
   switch (v->type) {
   case LVAL_DECIMAL:
   case LVAL_INTEGER:
+  case LVAL_OK:
+  case LVAL_EXIT:
     break;
 
   case LVAL_FUNCTION:
@@ -359,8 +420,17 @@ void lval_delete(lval *v) {
     free(v->error);
     break;
 
+  case LVAL_FILE:
+    free(v->file_name); 
+    free(v->mode);
+    break;
+
   case LVAL_SYMBOL:
     free(v->symbol);
+    break;
+
+  case LVAL_STRING:
+    free(v->string);
     break;
 
   case LVAL_SEXPRESSION:
@@ -398,6 +468,17 @@ lval *lval_copy(lval *v) {
   case LVAL_INTEGER:
     r->integer = v->integer;
     break;
+  case LVAL_EXIT:
+    r->exit_code = v->exit_code;
+    break;
+
+  case LVAL_FILE:
+    r->file = v->file;
+    r->file_name = malloc(strlen(v->file_name) + 1);
+    strcpy(r->file_name, v->file_name);
+    r->mode = malloc(strlen(v->mode) + 1);
+    strcpy(r->mode, v->mode);
+    break;
 
   case LVAL_ERROR:
     r->error = malloc(strlen(v->error) + 1);
@@ -407,6 +488,11 @@ lval *lval_copy(lval *v) {
   case LVAL_SYMBOL:
     r->symbol = malloc(strlen(v->symbol) + 1);
     strcpy(r->symbol, v->symbol);
+    break;
+
+  case LVAL_STRING:
+    r->string = malloc(strlen(v->string) + 1);
+    strcpy(r->string, v->string);
     break;
 
   case LVAL_SEXPRESSION:
@@ -433,11 +519,23 @@ void lval_print(lval *v) {
   case LVAL_SYMBOL:
     printf("%s", v->symbol);
     break;
+  case LVAL_STRING:
+    lval_string_print(v);
+    break;
   case LVAL_FUNCTION:
     lval_function_print(v);
     break;
   case LVAL_ERROR:
     printf("%s", v->error);
+    break;
+  case LVAL_EXIT:
+    printf("exit (%li)", v->exit_code);
+    break;
+  case LVAL_OK:
+    printf("ok");
+    break;
+  case LVAL_FILE:
+    printf("<file %s (%s)>", v->file_name, v->mode);
     break;
   case LVAL_SEXPRESSION:
     lval_expression_print(v, '(', ')');
@@ -474,4 +572,16 @@ void lval_function_print(lval *v) {
     lval_print(v->body);
     putchar(')');
   }
+}
+
+void lval_string_print(lval *v) {
+  char* escaped_string = malloc(strlen(v->string) + 1);
+  strcpy(escaped_string, v->string);
+  escaped_string = mpcf_escape(escaped_string);
+  printf("\"%s\"", escaped_string);
+  free(escaped_string);
+}
+
+void lval_string_show(lval *v) {
+  printf("\"%s\"", v->string);
 }

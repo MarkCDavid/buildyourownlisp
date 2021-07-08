@@ -86,7 +86,18 @@ void lenv_add_builtins(lenv *env) {
   lenv_add_builtin(env, "len", builtin_len);
   lenv_add_builtin(env, "init", builtin_init);
   lenv_add_builtin(env, "\\", builtin_lambda);
+  lenv_add_builtin(env, "load", builtin_load);
+  lenv_add_builtin(env, "read", builtin_read);
+  lenv_add_builtin(env, "print", builtin_print);
+  lenv_add_builtin(env, "show", builtin_show);
+  lenv_add_builtin(env, "error", builtin_error);
+  lenv_add_builtin(env, "exit", builtin_exit);
 
+
+  lenv_add_builtin(env, "fopen", builtin_file_open);
+  lenv_add_builtin(env, "fclose", builtin_file_close);
+  lenv_add_builtin(env, "fread", builtin_file_read);
+  lenv_add_builtin(env, "fwrite", builtin_file_write);
 
   lenv_add_builtin(env, "def", builtin_def);
   lenv_add_builtin(env, "=", builtin_put);
