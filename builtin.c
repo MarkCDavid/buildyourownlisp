@@ -375,6 +375,38 @@ lval *builtin_init(lenv *e, lval *v) {
   LERROR(v, "Function 'init' passed arguments of a new, unhandled type '%s'!", ltype_name(v->cell[0]->type));
 }
 
+
+lval *builtin_last(lenv *e, lval *v) {
+   LASSERT_ARG_COUNT("last", v, 1);
+  LASSERT_TYPE("last", v, 0, LVAL_LIST);
+
+  if(v->cell[0]->type == LVAL_QEXPRESSION) {
+    LASSERT_NOT_EMPTY("last", v, 0);
+    lval *r = lval_take(v, 0);
+    while (r->count > 1) {
+      lval_delete(lval_pop(r, 0));
+    }
+    return r;
+  } 
+
+  if(v->cell[0]->type == LVAL_STRING) {
+    LASSERT(v, strlen(v->cell[0]->string) != 0, "Function 'last' passed \"\"!");
+    
+    int length  = strlen(v->cell[0]->string);
+    char* result_string = malloc(2);
+    strncpy(result_string, v->cell[0]->string + length - 1, 1);
+    result_string[1] = '\0';
+
+    lval* result = lval_string(result_string);
+    
+    free(result_string);
+    lval_delete(v);
+    return result;
+  } 
+
+  LERROR(v, "Function 'head' passed arguments of a new, unhandled type '%s'!", ltype_name(v->cell[0]->type));
+}
+
 lval *builtin_lambda(lenv *e, lval *v) {
   LASSERT_ARG_COUNT("\\", v, 2);
   LASSERT_TYPE("\\", v, 0, LVAL_QEXPRESSION);

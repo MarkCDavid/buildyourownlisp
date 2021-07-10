@@ -15,6 +15,7 @@ lval *builtin_subtract(lenv* e, lval *v);
 lval *builtin_list(lenv* e, lval *v);
 lval *builtin_head(lenv* e, lval *v);
 lval *builtin_tail(lenv* e, lval *v);
+lval *builtin_last(lenv* e, lval *v);
 lval *builtin_eval(lenv* e, lval *v);
 lval *builtin_join(lenv* e, lval *v);
 lval *builtin_cons(lenv* e, lval *v);

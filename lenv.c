@@ -80,6 +80,7 @@ void lenv_add_builtins(lenv *env) {
   lenv_add_builtin(env, "list", builtin_list);
   lenv_add_builtin(env, "head", builtin_head);
   lenv_add_builtin(env, "tail", builtin_tail);
+  lenv_add_builtin(env, "last", builtin_last);
   lenv_add_builtin(env, "eval", builtin_eval);
   lenv_add_builtin(env, "join", builtin_join);
   lenv_add_builtin(env, "cons", builtin_cons);
