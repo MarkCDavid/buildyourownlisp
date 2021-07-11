@@ -68,6 +68,7 @@ lval *lval_sexpression(void) {
 
 lval *lval_lambda(lval *formals, lval *body) {
   lval *v = malloc(sizeof(lval));
+  v->builtin = NULL;
   v->type = LVAL_FUNCTION;
   v->environment = lenv_new();
   v->formals = formals;
@@ -90,7 +91,7 @@ lval *lval_exit(long exit_code) {
   return v;
 }
 
-lval *lval_file(FILE *file, char* file_name, char* mode) {
+lval *lval_file(FILE *file, char *file_name, char *mode) {
   lval *v = malloc(sizeof(lval));
   v->type = LVAL_FILE;
   v->file = file;
@@ -127,13 +128,12 @@ lval *lval_read_number(mpc_ast_t *t) {
   return lval_error("'%s' is not an integer or decimal", t->contents);
 }
 
-
 lval *lval_read_string(mpc_ast_t *t) {
   t->contents[strlen(t->contents) - 1] = '\0';
-  char* unescaped_string = malloc(strlen(t->contents + 1) + 1);
+  char *unescaped_string = malloc(strlen(t->contents + 1) + 1);
   strcpy(unescaped_string, t->contents + 1);
   unescaped_string = mpcf_unescape(unescaped_string);
-  lval* string = lval_string(unescaped_string);
+  lval *string = lval_string(unescaped_string);
   free(unescaped_string);
   return string;
 }
@@ -176,8 +176,8 @@ lval *lval_read(mpc_ast_t *t) {
     if (strcmp(t->children[i]->tag, "regex") == 0) {
       continue;
     }
-    if (strstr(t->children[i]->tag, "comment")) { 
-      continue; 
+    if (strstr(t->children[i]->tag, "comment")) {
+      continue;
     }
     result = lval_add(result, lval_read(t->children[i]));
   }
@@ -247,11 +247,11 @@ lval *lval_call(lenv *e, lval *f, lval *a) {
 
     lval *symbol = lval_pop(f->formals, 0);
 
-    if(strcmp(symbol->symbol, "&") == 0) {
-      if(f->formals->count != 1) {
+    if (strcmp(symbol->symbol, "&") == 0) {
+      if (f->formals->count != 1) {
         lval_delete(a);
         return lval_error("Function format invalid. "
-          "Symbol '&' not follow by single symbol.");
+                          "Symbol '&' not follow by single symbol.");
       }
 
       lval *nsymbols = lval_pop(f->formals, 0);
@@ -266,24 +266,23 @@ lval *lval_call(lenv *e, lval *f, lval *a) {
     lval_delete(symbol);
     lval_delete(value);
   }
-  
+
   lval_delete(a);
 
-  if(f->formals->count > 0 && strcmp(f->formals->cell[0]->symbol, "&") == 0) {
-    if(f->formals->count != 2) {
-        return lval_error("Function format invalid. "
-          "Symbol '&' not follow by single symbol.");
+  if (f->formals->count > 0 && strcmp(f->formals->cell[0]->symbol, "&") == 0) {
+    if (f->formals->count != 2) {
+      return lval_error("Function format invalid. "
+                        "Symbol '&' not follow by single symbol.");
     }
     lval_delete(lval_pop(f->formals, 0));
 
-    lval* symbol = lval_pop(f->formals, 0);
-    lval* value = lval_qexpression();
+    lval *symbol = lval_pop(f->formals, 0);
+    lval *value = lval_qexpression();
 
     lenv_put(f->environment, symbol, value);
     lval_delete(symbol);
     lval_delete(value);
   }
-
 
   if (f->formals->count == 0) {
     f->environment->parent = e;
@@ -295,11 +294,19 @@ lval *lval_call(lenv *e, lval *f, lval *a) {
 }
 
 lval *lval_pop(lval *v, int index) {
+  if (v->count <= 0) {
+    return NULL;
+  }
+
   lval *result = v->cell[index];
-  memmove(&v->cell[index], &v->cell[index + 1],
-          sizeof(lval *) * (v->count - index - 1));
+  lval **destination = &v->cell[index];
+  lval **source = &v->cell[index + 1];
+  int cells_to_move = v->count - index - 1;
+
+  memmove(destination, source, sizeof(lval *) * cells_to_move);
   v->count--;
   v->cell = realloc(v->cell, sizeof(lval *) * v->count);
+
   return result;
 }
 
@@ -318,72 +325,69 @@ lval *lval_join(lval *t, lval *v) {
   return t;
 }
 
-
-
 int lval_equal(lval *x, lval *y) {
 
-  if((x->type & LVAL_NUMBER) && (y->type & LVAL_NUMBER)) {
+  if ((x->type & LVAL_NUMBER) && (y->type & LVAL_NUMBER)) {
     return lval_equal_number(x, y);
   }
 
-  if(x->type != y->type) {
+  if (x->type != y->type) {
     return 0;
   }
 
-  switch (x->type)
-  {
-    case LVAL_INTEGER:
-    case LVAL_DECIMAL:
+  switch (x->type) {
+  case LVAL_INTEGER:
+  case LVAL_DECIMAL:
+    return 0;
+
+  case LVAL_OK:
+    return 1;
+
+  case LVAL_EXIT:
+    return x->exit_code == y->exit_code;
+
+  case LVAL_FILE:
+    return x->file == y->file && (strcmp(x->file_name, y->file_name) == 0) &&
+           (strcmp(x->mode, y->mode) == 0);
+  case LVAL_ERROR:
+    return (strcmp(x->error, y->error) == 0);
+  case LVAL_SYMBOL:
+    return (strcmp(x->symbol, y->symbol) == 0);
+  case LVAL_STRING:
+    return (strcmp(x->string, y->string) == 0);
+  case LVAL_FUNCTION:
+    if (x->builtin || y->builtin) {
+      return x->builtin == y->builtin;
+    } else {
+      return lval_equal(x->formals, y->formals) && lval_equal(x->body, y->body);
+    }
+  case LVAL_QEXPRESSION:
+  case LVAL_SEXPRESSION:
+    if (x->count != y->count) {
       return 0;
-
-    case LVAL_OK:
-      return 1;
-
-    case LVAL_EXIT:
-      return x->exit_code == y->exit_code;
-
-    case LVAL_FILE:
-      return x->file == y->file && (strcmp(x->file_name, y->file_name) == 0) && (strcmp(x->mode, y->mode) == 0);
-    case LVAL_ERROR:
-      return (strcmp(x->error, y->error) == 0);
-    case LVAL_SYMBOL:
-      return (strcmp(x->symbol, y->symbol) == 0);
-    case LVAL_STRING:
-      return (strcmp(x->string, y->string) == 0);
-    case LVAL_FUNCTION:
-      if (x->builtin || y->builtin) {
-        return x->builtin == y->builtin;
-      } else {
-        return lval_equal(x->formals, y->formals) && lval_equal(x->body, y->body);
-      }
-    case LVAL_QEXPRESSION:
-    case LVAL_SEXPRESSION:
-      if (x->count != y->count) {
+    }
+    for (int i = 0; i < x->count; i++) {
+      if (!lval_equal(x->cell[i], y->cell[i])) {
         return 0;
       }
-      for(int i =0 ; i < x->count; i++) {
-        if(!lval_equal(x->cell[i], y->cell[i])) {
-          return 0;
-        }
-      }
-      return 1;
+    }
+    return 1;
   }
   return 0;
 }
 
-
 int lval_equal_number(lval *x, lval *y) {
-  lval* xc = lval_copy(x);
-  lval* yc = lval_copy(y);
+  lval *xc = lval_copy(x);
+  lval *yc = lval_copy(y);
 
   xc = builtin_convert_to_decimal_if_required(xc, yc);
   yc = builtin_convert_to_decimal_if_required(yc, xc);
 
   int result = 0;
-  if(xc->type == LVAL_INTEGER) {
+  if (xc->type == LVAL_INTEGER) {
     result = xc->integer == yc->integer;
   }
-  if(xc->type == LVAL_DECIMAL) {
+  if (xc->type == LVAL_DECIMAL) {
     result = xc->decimal == yc->decimal;
   }
 
@@ -421,7 +425,7 @@ void lval_delete(lval *v) {
     break;
 
   case LVAL_FILE:
-    free(v->file_name); 
+    free(v->file_name);
     free(v->mode);
     break;
 
@@ -575,13 +579,11 @@ void lval_function_print(lval *v) {
 }
 
 void lval_string_print(lval *v) {
-  char* escaped_string = malloc(strlen(v->string) + 1);
+  char *escaped_string = malloc(strlen(v->string) + 1);
   strcpy(escaped_string, v->string);
   escaped_string = mpcf_escape(escaped_string);
   printf("\"%s\"", escaped_string);
   free(escaped_string);
 }
 
-void lval_string_show(lval *v) {
-  printf("\"%s\"", v->string);
-}
+void lval_string_show(lval *v) { printf("\"%s\"", v->string); }

@@ -613,10 +613,10 @@ lval *builtin_ordinal(lenv *e, lval *v, char *function) {
   }
   if (strcmp(function, ">=") == 0) {
     if (x->type == LVAL_INTEGER) {
-      result = (x->integer <= y->integer);
+      result = (x->integer >= y->integer);
     }
     if (x->type == LVAL_DECIMAL) {
-      result = (x->decimal <= y->decimal);
+      result = (x->decimal >= y->decimal);
     }
   }
   if (strcmp(function, "<=") == 0) {
