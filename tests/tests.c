@@ -1,28 +1,24 @@
 #include <check.h>
 #include <stdlib.h>
 
-#define PREPARE_SUITE(__name) \
+#define PREPARE_SUITE(__name, __suite_runner) \
   extern Suite *__name(void); \
-  int run_##__name () { \
-    Suite *suite = __name(); \
-    SRunner *suite_runner = srunner_create(suite); \
-    srunner_run_all(suite_runner, CK_NORMAL); \
-    int number_failed = srunner_ntests_failed(suite_runner); \
-    srunner_free(suite_runner); \
-    return number_failed; \
-  };
-
-
-#define RUN_SUITE(__name, __tally) __tally += run_##__name ();
-
-
-PREPARE_SUITE(lval_suite);
+  if(__suite_runner) { \
+    srunner_add_suite(__suite_runner, __name()); \
+  } else { \
+    __suite_runner = srunner_create(__name()); \
+  } \
 
 int main(void)
 {
-  int number_failed = 0;
-
-  RUN_SUITE(lval_suite, number_failed);
+  SRunner *suite_runner;
   
+  PREPARE_SUITE(lval_suite, suite_runner);
+  PREPARE_SUITE(lenv_suite, suite_runner); 
+
+  srunner_run_all(suite_runner, CK_VERBOSE);
+  int number_failed = srunner_ntests_failed(suite_runner);
+  srunner_free(suite_runner); 
+
   return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
