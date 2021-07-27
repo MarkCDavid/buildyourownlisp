@@ -2,7 +2,7 @@
 #include "grammar.h"
 #include "lenv.h"
 #include "ltypes.h"
-#include "lval.h"
+#include "lval/lval.h"
 #include "macros.h"
 
 lval *builtin_add(lenv *e, lval *v) {

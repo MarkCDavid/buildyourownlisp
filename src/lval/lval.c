@@ -1,112 +1,8 @@
-#include "lval.h"
+#include "lval/lval.h"
 #include "builtin.h"
 #include "lenv.h"
 #include "ltypes.h"
 #include <stdio.h>
-
-lval *lval_integer(long integer) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_INTEGER;
-  v->integer = integer;
-  return v;
-}
-
-lval *lval_decimal(double decimal) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_DECIMAL;
-  v->decimal = decimal;
-  return v;
-}
-
-lval *lval_symbol(char *symbol) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_SYMBOL;
-  v->symbol = malloc(strlen(symbol) + 1);
-  strcpy(v->symbol, symbol);
-  return v;
-}
-
-lval *lval_string(char *string) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_STRING;
-  v->string = malloc(strlen(string) + 1);
-  strcpy(v->string, string);
-  return v;
-}
-
-lval *lval_function(lbuiltin function, char *name) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_FUNCTION;
-  v->builtin = function;
-  v->builtin_name = malloc(strlen(name) + 1);
-  strcpy(v->builtin_name, name);
-  return v;
-}
-
-lval *lval_error(char *format, ...) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_ERROR;
-
-  va_list va;
-  va_start(va, format);
-
-  v->error = malloc(512);
-  vsnprintf(v->error, 511, format, va);
-  v->error = realloc(v->error, strlen(v->error) + 1);
-
-  va_end(va);
-  return v;
-}
-
-lval *lval_sexpression(void) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_SEXPRESSION;
-  v->cell = NULL;
-  v->count = 0;
-  return v;
-}
-
-lval *lval_lambda(lval *formals, lval *body) {
-  lval *v = malloc(sizeof(lval));
-  v->builtin = NULL;
-  v->type = LVAL_FUNCTION;
-  v->environment = lenv_new();
-  v->formals = formals;
-  v->body = body;
-  return v;
-}
-
-lval *lval_qexpression(void) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_QEXPRESSION;
-  v->cell = NULL;
-  v->count = 0;
-  return v;
-}
-
-lval *lval_exit(long exit_code) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_EXIT;
-  v->exit_code = exit_code;
-  return v;
-}
-
-lval *lval_file(FILE *file, char *file_name, char *mode) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_FILE;
-  v->file = file;
-  v->file_name = malloc(strlen(file_name) + 1);
-  strcpy(v->file_name, file_name);
-  v->mode = malloc(strlen(mode) + 1);
-  strcpy(v->mode, mode);
-  return v;
-}
-
-lval *lval_ok(void) {
-  lval *v = malloc(sizeof(lval));
-  v->type = LVAL_OK;
-  return v;
-}
 
 lval *lval_read_number(mpc_ast_t *t) {
   if (strstr(t->tag, "decimal")) {
@@ -405,53 +301,14 @@ lval *lval_add(lval *t, lval *v) {
 }
 
 void lval_delete(lval *v) {
-  switch (v->type) {
-  case LVAL_DECIMAL:
-  case LVAL_INTEGER:
-  case LVAL_OK:
-  case LVAL_EXIT:
-    break;
-
-  case LVAL_FUNCTION:
-    if (!v->builtin) {
-      lenv_delete(v->environment);
-      lval_delete(v->formals);
-      lval_delete(v->body);
-    }
-    break;
-
-  case LVAL_ERROR:
-    free(v->error);
-    break;
-
-  case LVAL_FILE:
-    free(v->file_name);
-    free(v->mode);
-    break;
-
-  case LVAL_SYMBOL:
-    free(v->symbol);
-    break;
-
-  case LVAL_STRING:
-    free(v->string);
-    break;
-
-  case LVAL_SEXPRESSION:
-  case LVAL_QEXPRESSION:
-    for (int i = 0; i < v->count; i++) {
-      lval_delete(v->cell[i]);
-    }
-    free(v->cell);
-  }
-
-  free(v);
+  v->delete(v);
 }
 
 lval *lval_copy(lval *v) {
 
   lval *r = malloc(sizeof(lval));
   r->type = v->type;
+  r->delete = v->delete;
 
   switch (v->type) {
   case LVAL_FUNCTION:

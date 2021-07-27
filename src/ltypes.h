@@ -11,9 +11,13 @@ typedef struct lenv lenv;
 
 typedef lval*(*lbuiltin)(lenv *e, lval *v);
 
+typedef void(*lf_delete)(lval *v);
+
 struct lval {
   int type;
   int count;
+
+  lf_delete delete;
 
   union {
     long integer;

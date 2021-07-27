@@ -1,5 +1,5 @@
 #include "lenv.h"
-#include "lval.h"
+#include "lval/lval.h"
 #include "builtin.h"
 #include <stdlib.h>
 

@@ -1,7 +1,7 @@
 #include "readline.h"
 #include "mpc.h"
 #include "grammar.h"
-#include "lval.h"
+#include "lval/lval.h"
 #include "lenv.h"
 #include "builtin.h"
 #include <config.h>

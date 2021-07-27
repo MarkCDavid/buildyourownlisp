@@ -1,7 +1,7 @@
 AC_INIT([lispy], [1.0])
 AM_PROG_AR
 LT_INIT([disable-shared])
-AM_INIT_AUTOMAKE([-Wall -Werror])
+AM_INIT_AUTOMAKE([-Wall -Werror subdir-objects])
 AC_PROG_CC
 AM_PATH_CHECK()
 AC_CONFIG_MACRO_DIRS([m4])
