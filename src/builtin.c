@@ -787,6 +787,23 @@ lval *builtin_fun(lenv *e, lval *v) {
   return builtin_def(e, def_arguments);
 }
 
+lval *builtin_dir(lenv *e, lval *v) {
+  LASSERT_ARG_COUNT("dir", v, 1);
+
+  lval *qexpression = lval_qexpression();
+  
+  for(int i = 0; i < e->count; i++) {
+    lval_add(qexpression, lval_string(e->symbols[i]));
+  }
+
+  lval_println(qexpression);
+
+  lval_delete(v);
+  lval_delete(qexpression);
+
+  return lval_ok();
+}
+
 lval *builtin_convert_to_decimal_if_required(lval *t, lval *c) {
   if (t->type == LVAL_DECIMAL) {
     return t;

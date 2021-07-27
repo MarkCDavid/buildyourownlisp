@@ -3,6 +3,7 @@
 
 #include "ltypes.h"
 
-void lval_sexpression_delete(lval* v);
+void lval_sexpression_delete(lval *v);
+lval *lval_sexpression_copy(lval *s, lval *d);
 
 #endif

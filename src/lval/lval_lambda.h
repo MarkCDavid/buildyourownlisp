@@ -3,6 +3,7 @@
 
 #include "ltypes.h"
 
-void lval_lambda_delete(lval* v);
+void lval_lambda_delete(lval *v);
+lval *lval_lambda_copy(lval *s, lval *d);
 
 #endif

@@ -8,6 +8,7 @@ lenv* lenv_copy(lenv* env);
 void lenv_delete(lenv* env);
 
 lval* lenv_get(lenv* env, lval* key);
+lval* lenv_get_by_index(lenv* env, int index);
 void lenv_put(lenv* env, lval* key, lval* value);
 void lenv_def(lenv* env, lval* key, lval* value);
 

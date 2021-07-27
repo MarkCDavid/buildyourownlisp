@@ -3,6 +3,7 @@
 
 #include "ltypes.h"
 
-void lval_ok_delete(lval* v);
+void lval_ok_delete(lval *v);
+lval *lval_ok_copy(lval *s, lval *d);
 
 #endif

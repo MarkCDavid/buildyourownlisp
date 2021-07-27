@@ -300,74 +300,17 @@ lval *lval_add(lval *t, lval *v) {
   return t;
 }
 
-void lval_delete(lval *v) {
-  v->delete(v);
+void lval_delete(lval *v) { v->delete (v); }
+
+lval *lval_copy(lval *s) {
+  lval *d = malloc(sizeof(lval));
+  d->type = s->type;
+  d->delete = s->delete;
+  d->copy = s->copy;
+  return s->copy(s, d);
 }
 
-lval *lval_copy(lval *v) {
-
-  lval *r = malloc(sizeof(lval));
-  r->type = v->type;
-  r->delete = v->delete;
-
-  switch (v->type) {
-  case LVAL_FUNCTION:
-    if (v->builtin) {
-      r->builtin = v->builtin;
-      r->builtin_name = malloc(strlen(v->builtin_name) + 1);
-      strcpy(r->builtin_name, v->builtin_name);
-    } else {
-      r->builtin = NULL;
-      r->environment = lenv_copy(v->environment);
-      r->formals = lval_copy(v->formals);
-      r->body = lval_copy(v->body);
-    }
-    break;
-  case LVAL_DECIMAL:
-    r->decimal = v->decimal;
-    break;
-  case LVAL_INTEGER:
-    r->integer = v->integer;
-    break;
-  case LVAL_EXIT:
-    r->exit_code = v->exit_code;
-    break;
-
-  case LVAL_FILE:
-    r->file = v->file;
-    r->file_name = malloc(strlen(v->file_name) + 1);
-    strcpy(r->file_name, v->file_name);
-    r->mode = malloc(strlen(v->mode) + 1);
-    strcpy(r->mode, v->mode);
-    break;
-
-  case LVAL_ERROR:
-    r->error = malloc(strlen(v->error) + 1);
-    strcpy(r->error, v->error);
-    break;
-
-  case LVAL_SYMBOL:
-    r->symbol = malloc(strlen(v->symbol) + 1);
-    strcpy(r->symbol, v->symbol);
-    break;
-
-  case LVAL_STRING:
-    r->string = malloc(strlen(v->string) + 1);
-    strcpy(r->string, v->string);
-    break;
-
-  case LVAL_SEXPRESSION:
-  case LVAL_QEXPRESSION:
-    r->count = v->count;
-    r->cell = malloc(sizeof(lval *) * r->count);
-    for (int i = 0; i < r->count; i++) {
-      r->cell[i] = lval_copy(v->cell[i]);
-    }
-    break;
-  }
-
-  return r;
-}
+void lval_copy_core(lval *s, lval *d) {}
 
 void lval_print(lval *v) {
   switch (v->type) {

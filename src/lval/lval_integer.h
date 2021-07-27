@@ -3,6 +3,7 @@
 
 #include "ltypes.h"
 
-void lval_integer_delete(lval* v);
+void lval_integer_delete(lval *v);
+lval *lval_integer_copy(lval *s, lval *d);
 
 #endif
