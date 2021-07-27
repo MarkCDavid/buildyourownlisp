@@ -7,6 +7,8 @@ lval *lval_error(char *format, ...) {
   lval *v = malloc(sizeof(lval));
   v->delete = lval_error_delete;
   v->copy = lval_error_copy;
+  v->print = lval_error_print;
+  v->show = lval_error_print;
   v->type = LVAL_ERROR;
 
   va_list va;
@@ -28,4 +30,8 @@ lval *lval_error_copy(lval *s, lval *d) {
   d->error = malloc(strlen(s->error) + 1);
   strcpy(d->error, s->error);
   return d;
+}
+
+void lval_error_print(lval *v) {
+  printf("%s", v->error);
 }

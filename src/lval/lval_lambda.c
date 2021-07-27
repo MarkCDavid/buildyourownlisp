@@ -7,6 +7,8 @@ lval *lval_lambda(lval *formals, lval *body) {
   lval *v = malloc(sizeof(lval));
   v->delete = lval_lambda_delete;
   v->copy = lval_lambda_copy;
+  v->print = lval_lambda_print;
+  v->show = lval_lambda_print;
   v->builtin = NULL;
   v->type = LVAL_FUNCTION;
   v->environment = lenv_new();
@@ -28,4 +30,12 @@ lval *lval_lambda_copy(lval *s, lval *d) {
   d->formals = lval_copy(s->formals);
   d->body = lval_copy(s->body);
   return d;
+}
+
+void lval_lambda_print(lval *v) {
+  printf("{\\ ");
+  lval_print(v->formals);
+  putchar(' ');
+  lval_print(v->body);
+  putchar(')');
 }

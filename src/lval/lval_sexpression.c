@@ -6,6 +6,8 @@ lval *lval_sexpression(void) {
   lval *v = malloc(sizeof(lval));
   v->delete = lval_sexpression_delete;
   v->copy = lval_sexpression_copy;
+  v->print = lval_sexpression_print;
+  v->show = lval_sexpression_print;
   v->type = LVAL_SEXPRESSION;
   v->cell = NULL;
   v->count = 0;
@@ -27,4 +29,15 @@ lval *lval_sexpression_copy(lval *s, lval *d) {
     d->cell[i] = lval_copy(s->cell[i]);
   }
   return d;
+}
+
+void lval_sexpression_print(lval *v) {
+putchar('(');
+  for (int i = 0; i < v->count; i++) {
+    lval_print(v->cell[i]);
+    if (i != (v->count - 1)) {
+      putchar(' ');
+    }
+  }
+  putchar(')');
 }

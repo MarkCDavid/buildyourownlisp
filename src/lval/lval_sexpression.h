@@ -5,5 +5,6 @@
 
 void lval_sexpression_delete(lval *v);
 lval *lval_sexpression_copy(lval *s, lval *d);
+void lval_sexpression_print(lval *v);
 
 #endif

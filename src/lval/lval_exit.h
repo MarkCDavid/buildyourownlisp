@@ -5,5 +5,6 @@
 
 void lval_exit_delete(lval *v);
 lval *lval_exit_copy(lval *s, lval *d);
+void lval_exit_print(lval *v);
 
 #endif

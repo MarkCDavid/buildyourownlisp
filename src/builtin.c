@@ -468,14 +468,9 @@ lval *builtin_print(lenv *e, lval *v) {
 
 lval *builtin_show(lenv* e, lval *v) {
   for (int i = 0; i < v->count; i++) {
-    LASSERT_TYPE("show", v, i, LVAL_STRING);
-  }
-
-  for (int i = 0; i < v->count; i++) {
-    lval_string_show(v->cell[i]);
+    lval_show(v->cell[i]);
     putchar(' ');
   }
-
   putchar('\n');
   lval_delete(v);
 

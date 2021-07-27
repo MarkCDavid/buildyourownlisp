@@ -20,6 +20,8 @@ struct lval {
 
   lv_void_lval delete;
   lv_lval_lval_lval copy;
+  lv_void_lval print;
+  lv_void_lval show;
 
   union {
     long integer;

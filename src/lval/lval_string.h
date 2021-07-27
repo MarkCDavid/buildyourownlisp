@@ -5,5 +5,7 @@
 
 void lval_string_delete(lval *v);
 lval *lval_string_copy(lval *s, lval *d);
+void lval_string_print(lval *v);
+void lval_string_show(lval *v);
 
 #endif

@@ -6,6 +6,8 @@ lval *lval_ok(void) {
   lval *v = malloc(sizeof(lval));
   v->delete = lval_ok_delete;
   v->copy = lval_ok_copy;
+  v->print = lval_ok_print;
+  v->show = lval_ok_print;
   v->type = LVAL_OK;
   return v;
 }
@@ -13,3 +15,5 @@ lval *lval_ok(void) {
 void lval_ok_delete(lval *v) { free(v); }
 
 lval *lval_ok_copy(lval *s, lval *d) { return d; }
+
+void lval_ok_print(lval *v) { printf("ok"); }

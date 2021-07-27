@@ -307,83 +307,15 @@ lval *lval_copy(lval *s) {
   d->type = s->type;
   d->delete = s->delete;
   d->copy = s->copy;
+  d->print = s->print;
+  d->show = s->show;
   return s->copy(s, d);
 }
-
-void lval_copy_core(lval *s, lval *d) {}
-
-void lval_print(lval *v) {
-  switch (v->type) {
-  case LVAL_INTEGER:
-    printf("%li", v->integer);
-    break;
-  case LVAL_DECIMAL:
-    printf("%f", v->decimal);
-    break;
-  case LVAL_SYMBOL:
-    printf("%s", v->symbol);
-    break;
-  case LVAL_STRING:
-    lval_string_print(v);
-    break;
-  case LVAL_FUNCTION:
-    lval_function_print(v);
-    break;
-  case LVAL_ERROR:
-    printf("%s", v->error);
-    break;
-  case LVAL_EXIT:
-    printf("exit (%li)", v->exit_code);
-    break;
-  case LVAL_OK:
-    printf("ok");
-    break;
-  case LVAL_FILE:
-    printf("<file %s (%s)>", v->file_name, v->mode);
-    break;
-  case LVAL_SEXPRESSION:
-    lval_expression_print(v, '(', ')');
-    break;
-  case LVAL_QEXPRESSION:
-    lval_expression_print(v, '{', '}');
-    break;
-  }
-}
+void lval_print(lval *v) { v->print(v); }
 
 void lval_println(lval *v) {
   lval_print(v);
   putchar('\n');
 }
 
-void lval_expression_print(lval *v, char open, char close) {
-  putchar(open);
-  for (int i = 0; i < v->count; i++) {
-    lval_print(v->cell[i]);
-    if (i != (v->count - 1)) {
-      putchar(' ');
-    }
-  }
-  putchar(close);
-}
-
-void lval_function_print(lval *v) {
-  if (v->builtin) {
-    printf("<function '%s'>", v->builtin_name);
-  } else {
-    printf("{\\ ");
-    lval_print(v->formals);
-    putchar(' ');
-    lval_print(v->body);
-    putchar(')');
-  }
-}
-
-void lval_string_print(lval *v) {
-  char *escaped_string = malloc(strlen(v->string) + 1);
-  strcpy(escaped_string, v->string);
-  escaped_string = mpcf_escape(escaped_string);
-  printf("\"%s\"", escaped_string);
-  free(escaped_string);
-}
-
-void lval_string_show(lval *v) { printf("\"%s\"", v->string); }
+void lval_show(lval *v) { v->show(v); }

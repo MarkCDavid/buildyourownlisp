@@ -6,6 +6,8 @@ lval *lval_file(FILE *file, char *file_name, char *mode) {
   lval *v = malloc(sizeof(lval));
   v->delete = lval_file_delete;
   v->copy = lval_file_copy;
+  v->print = lval_file_print;
+  v->show = lval_file_print;
   v->type = LVAL_FILE;
   v->file = file;
   v->file_name = malloc(strlen(file_name) + 1);
@@ -28,4 +30,8 @@ lval *lval_file_copy(lval *s, lval *d) {
   d->mode = malloc(strlen(s->mode) + 1);
   strcpy(d->mode, s->mode);
   return d;
+}
+
+void lval_file_print(lval *v) {
+  printf("<file %s (%s)>", v->file_name, v->mode);
 }

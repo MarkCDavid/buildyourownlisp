@@ -5,5 +5,6 @@
 
 void lval_lambda_delete(lval *v);
 lval *lval_lambda_copy(lval *s, lval *d);
+void lval_lambda_print(lval *v);
 
 #endif
