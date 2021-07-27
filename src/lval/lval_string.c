@@ -9,6 +9,8 @@ lval *lval_string(char *string) {
   v->copy = lval_string_copy;
   v->print = lval_string_print;
   v->show = lval_string_show;
+  v->eval = lval_string_eval;
+  v->call = NULL;
   v->type = LVAL_STRING;
   v->string = malloc(strlen(string) + 1);
   strcpy(v->string, string);
@@ -35,3 +37,5 @@ void lval_string_print(lval *v) {
 }
 
 void lval_string_show(lval *v) { printf("\"%s\"", v->string); }
+
+lval *lval_string_eval(lenv *e, lval *v) { return v; }

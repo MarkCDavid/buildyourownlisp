@@ -6,5 +6,6 @@
 void lval_symbol_delete(lval *v);
 lval *lval_symbol_copy(lval *s, lval *d);
 void lval_symbol_print(lval *v);
+lval *lval_symbol_eval(lenv* e, lval *v);
 
 #endif

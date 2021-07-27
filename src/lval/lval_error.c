@@ -9,6 +9,8 @@ lval *lval_error(char *format, ...) {
   v->copy = lval_error_copy;
   v->print = lval_error_print;
   v->show = lval_error_print;
+  v->eval = lval_error_eval;
+  v->call = NULL;
   v->type = LVAL_ERROR;
 
   va_list va;
@@ -34,4 +36,8 @@ lval *lval_error_copy(lval *s, lval *d) {
 
 void lval_error_print(lval *v) {
   printf("%s", v->error);
+}
+
+lval *lval_error_eval(lenv *e, lval *v) {
+  return v;
 }

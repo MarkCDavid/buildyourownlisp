@@ -7,6 +7,8 @@ lval *lval_exit(long exit_code) {
   v->copy = lval_exit_copy;
   v->print = lval_exit_print;
   v->show = lval_exit_print;
+  v->eval = lval_exit_eval;
+  v->call = NULL;
   v->type = LVAL_EXIT;
   v->exit_code = exit_code;
   return v;
@@ -20,3 +22,5 @@ lval *lval_exit_copy(lval *s, lval *d) {
 }
 
 void lval_exit_print(lval *v) { printf("exit (%li)", v->exit_code); }
+
+lval *lval_exit_eval(lenv *e, lval *v) { return v; }

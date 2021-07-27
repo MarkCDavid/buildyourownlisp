@@ -6,5 +6,6 @@
 void lval_qexpression_delete(lval *v);
 lval *lval_qexpression_copy(lval *s, lval *d);
 void lval_qexpression_print(lval *v);
+lval *lval_qexpression_eval(lenv* e, lval *v);
 
 #endif

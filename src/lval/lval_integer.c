@@ -7,6 +7,8 @@ lval *lval_integer(long integer) {
   v->copy = lval_integer_copy;
   v->print = lval_integer_print;
   v->show = lval_integer_print;
+  v->eval = lval_integer_eval;
+  v->call = NULL;
   v->type = LVAL_INTEGER;
   v->integer = integer;
   return v;
@@ -19,6 +21,6 @@ lval *lval_integer_copy(lval *s, lval *d) {
   return d;
 }
 
-void lval_integer_print(lval *v) {
-  printf("%li", v->integer);
-}
+void lval_integer_print(lval *v) { printf("%li", v->integer); }
+
+lval *lval_integer_eval(lenv *e, lval *v) { return v; }

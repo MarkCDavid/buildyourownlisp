@@ -82,111 +82,11 @@ lval *lval_read(mpc_ast_t *t) {
 }
 
 lval *lval_eval(lenv *e, lval *v) {
-  if (v->type == LVAL_SYMBOL) {
-    lval *r = lenv_get(e, v);
-    lval_delete(v);
-    return r;
-  }
-  if (v->type == LVAL_SEXPRESSION) {
-    return lval_eval_sexpression(e, v);
-  }
-  return v;
-}
-
-lval *lval_eval_sexpression(lenv *e, lval *v) {
-  for (int i = 0; i < v->count; i++) {
-    v->cell[i] = lval_eval(e, v->cell[i]);
-  }
-
-  for (int i = 0; i < v->count; i++) {
-    if (v->cell[i]->type == LVAL_ERROR) {
-      return lval_take(v, i);
-    }
-  }
-
-  if (v->count == 0) {
-    return v;
-  }
-  if (v->count == 1) {
-    return lval_take(v, 0);
-  }
-
-  lval *f = lval_pop(v, 0);
-  if (f->type != LVAL_FUNCTION) {
-    lval_delete(f);
-    lval_delete(v);
-    return lval_error(
-        "S-Expression starts with incorrect type! Got %s, Expected %s.",
-        ltype_name(f->type), ltype_name(LVAL_FUNCTION));
-  }
-
-  lval *result = lval_call(e, f, v);
-  lval_delete(f);
-  return result;
+  return v->eval(e, v);
 }
 
 lval *lval_call(lenv *e, lval *f, lval *a) {
-  if (f->builtin) {
-    return f->builtin(e, a);
-  }
-
-  int given = a->count;
-  int total = f->formals->count;
-
-  while (a->count) {
-    if (f->formals->count == 0) {
-      lval_delete(a);
-      return lval_error("Function passed too many arguments. "
-                        "Got %i, Expected %i.",
-                        given, total);
-    }
-
-    lval *symbol = lval_pop(f->formals, 0);
-
-    if (strcmp(symbol->symbol, "&") == 0) {
-      if (f->formals->count != 1) {
-        lval_delete(a);
-        return lval_error("Function format invalid. "
-                          "Symbol '&' not follow by single symbol.");
-      }
-
-      lval *nsymbols = lval_pop(f->formals, 0);
-      lenv_put(f->environment, nsymbols, builtin_list(e, a));
-      lval_delete(symbol);
-      lval_delete(nsymbols);
-      break;
-    }
-
-    lval *value = lval_pop(a, 0);
-    lenv_put(f->environment, symbol, value);
-    lval_delete(symbol);
-    lval_delete(value);
-  }
-
-  lval_delete(a);
-
-  if (f->formals->count > 0 && strcmp(f->formals->cell[0]->symbol, "&") == 0) {
-    if (f->formals->count != 2) {
-      return lval_error("Function format invalid. "
-                        "Symbol '&' not follow by single symbol.");
-    }
-    lval_delete(lval_pop(f->formals, 0));
-
-    lval *symbol = lval_pop(f->formals, 0);
-    lval *value = lval_qexpression();
-
-    lenv_put(f->environment, symbol, value);
-    lval_delete(symbol);
-    lval_delete(value);
-  }
-
-  if (f->formals->count == 0) {
-    f->environment->parent = e;
-    return builtin_eval(f->environment,
-                        lval_add(lval_sexpression(), lval_copy(f->body)));
-  } else {
-    return lval_copy(f);
-  }
+  return f->call(e, f, a);
 }
 
 lval *lval_pop(lval *v, int index) {
@@ -309,6 +209,8 @@ lval *lval_copy(lval *s) {
   d->copy = s->copy;
   d->print = s->print;
   d->show = s->show;
+  d->eval = s->eval;
+  d->call = s->call;
   return s->copy(s, d);
 }
 void lval_print(lval *v) { v->print(v); }

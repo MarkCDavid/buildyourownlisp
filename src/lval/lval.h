@@ -23,7 +23,6 @@ lval *lval_read_number(mpc_ast_t *t);
 lval *lval_read_string(mpc_ast_t *t);
 
 lval *lval_eval(lenv *e, lval *v);
-lval *lval_eval_sexpression(lenv *e, lval *v);
 lval *lval_call(lenv *e, lval *f, lval *a);
 
 lval *lval_pop(lval *v, int index);

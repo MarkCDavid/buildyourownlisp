@@ -8,6 +8,8 @@ lval *lval_qexpression(void) {
   v->copy = lval_qexpression_copy;
   v->print = lval_qexpression_print;
   v->show = lval_qexpression_print;
+  v->eval = lval_qexpression_eval;
+  v->call = NULL;
   v->type = LVAL_QEXPRESSION;
   v->cell = NULL;
   v->count = 0;
@@ -41,3 +43,4 @@ putchar('{');
   }
   putchar('}');
 }
+lval *lval_qexpression_eval(lenv* e, lval *v) { return v; }

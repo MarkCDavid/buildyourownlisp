@@ -1,4 +1,5 @@
 #include "lval_function.h"
+#include "lval.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,6 +9,8 @@ lval *lval_function(lbuiltin function, char *name) {
   v->copy = lval_function_copy;
   v->print = lval_function_print;
   v->show = lval_function_print;
+  v->eval = lval_function_eval;
+  v->call = lval_function_call;
   v->type = LVAL_FUNCTION;
   v->builtin = function;
   v->builtin_name = malloc(strlen(name) + 1);
@@ -26,4 +29,11 @@ lval *lval_function_copy(lval *s, lval *d) {
 
 void lval_function_print(lval *v) {
   printf("<function '%s'>", v->builtin_name);
+}
+
+lval *lval_function_eval(lenv *e, lval *v) { return v; }
+
+lval *lval_function_call(lenv* e, lval *f, lval *a) {
+  printf("function_call: "); lval_println(f);
+  return f->builtin(e, a);
 }

@@ -1,4 +1,6 @@
 #include "lval_symbol.h"
+#include "lval.h"
+#include "../lenv.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,6 +10,8 @@ lval *lval_symbol(char *symbol) {
   v->copy = lval_symbol_copy;
   v->print = lval_symbol_print;
   v->show = lval_symbol_print;
+  v->eval = lval_symbol_eval;
+  v->call = NULL;
   v->type = LVAL_SYMBOL;
   v->symbol = malloc(strlen(symbol) + 1);
   strcpy(v->symbol, symbol);
@@ -26,3 +30,9 @@ lval *lval_symbol_copy(lval *s, lval *d) {
 }
 
 void lval_symbol_print(lval *v) { printf("%s", v->symbol); }
+
+lval *lval_symbol_eval(lenv *e, lval *v) {
+  lval *r = lenv_get(e, v);
+  lval_delete(v);
+  return r;
+}

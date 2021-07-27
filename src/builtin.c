@@ -3,6 +3,8 @@
 #include "lenv.h"
 #include "ltypes.h"
 #include "lval/lval.h"
+#include "lval/lval_sexpression.h"
+#include "lval/lval_qexpression.h"
 #include "macros.h"
 
 lval *builtin_add(lenv *e, lval *v) {
@@ -191,6 +193,7 @@ lval *builtin_subtract(lenv *e, lval *v) {
 
 lval *builtin_list(lenv *e, lval *v) {
   v->type = LVAL_QEXPRESSION;
+  v->eval = lval_qexpression_eval;
   return v;
 }
 
@@ -256,7 +259,9 @@ lval *builtin_eval(lenv *e, lval *v) {
   LASSERT_TYPE("eval", v, 0, LVAL_QEXPRESSION);
 
   lval *r = lval_take(v, 0);
+  lval_println(r);
   r->type = LVAL_SEXPRESSION;
+  r->eval = lval_sexpression_eval;
   return lval_eval(e, r);
 }
 
@@ -705,7 +710,9 @@ lval *builtin_if(lenv *e, lval *v) {
   LASSERT_TYPE("if", v, 2, LVAL_QEXPRESSION);
 
   v->cell[1]->type = LVAL_SEXPRESSION;
+  v->cell[1]->eval = lval_sexpression_eval;
   v->cell[2]->type = LVAL_SEXPRESSION;
+  v->cell[2]->eval = lval_sexpression_eval;
 
   lval *result;
   if (v->cell[0]->integer) {

@@ -7,6 +7,8 @@ lval *lval_decimal(double decimal) {
   v->copy = lval_decimal_copy;
   v->print = lval_decimal_print;
   v->show = lval_decimal_print;
+  v->eval = lval_decimal_eval;
+  v->call = NULL;
   v->type = LVAL_DECIMAL;
   v->decimal = decimal;
   return v;
@@ -20,3 +22,5 @@ lval *lval_decimal_copy(lval *s, lval *d) {
 }
 
 void lval_decimal_print(lval *v) { printf("%f", v->decimal); }
+
+lval *lval_decimal_eval(lenv *e, lval *v) { return v;}

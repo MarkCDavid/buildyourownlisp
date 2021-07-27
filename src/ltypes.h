@@ -11,17 +11,21 @@ typedef struct lenv lenv;
 
 typedef lval*(*lbuiltin)(lenv *e, lval *v);
 
-typedef void(*lv_void_lval)(lval *v);
-typedef lval*(*lv_lval_lval_lval)(lval *x, lval *y);
+typedef void(*lf_void_lval)(lval *v);
+typedef lval*(*lf_lval_lval_lval)(lval *x, lval *y);
+typedef lval*(*lf_lval_lenv_lval)(lenv *e, lval *v);
+typedef lval*(*lf_lval_lenv_lval_lval)(lenv *e, lval *f, lval *a);
 
 struct lval {
   int type;
   int count;
 
-  lv_void_lval delete;
-  lv_lval_lval_lval copy;
-  lv_void_lval print;
-  lv_void_lval show;
+  lf_void_lval delete;
+  lf_lval_lval_lval copy;
+  lf_void_lval print;
+  lf_void_lval show;
+  lf_lval_lenv_lval eval;
+  lf_lval_lenv_lval_lval call;
 
   union {
     long integer;
