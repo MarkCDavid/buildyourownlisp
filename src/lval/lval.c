@@ -1,7 +1,7 @@
 #include "lval/lval.h"
-#include "builtin.h"
-#include "lenv.h"
-#include "ltypes.h"
+#include "../builtin.h"
+#include "../lenv.h"
+#include "../ltypes.h"
 #include <stdio.h>
 
 lval *lval_read_number(mpc_ast_t *t) {

@@ -1,4 +1,4 @@
-#include "lval/lval_integer.h"
+#include "lval_integer.h"
 #include <stdlib.h>
 
 lval *lval_integer(long integer) {

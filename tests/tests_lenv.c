@@ -1,6 +1,6 @@
 #include <check.h>
 #include <stdlib.h>
-#include "../src/lval.h"
+#include "../src/lval/lval.h"
 #include "../src/lenv.h"
 
 START_TEST (when__lenv_get__called_with_existing_key_lval_is_returned)

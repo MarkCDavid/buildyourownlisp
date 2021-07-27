@@ -1,5 +1,5 @@
 #include <check.h>
-#include "../src/lval.h"
+#include "../src/lval/lval.h"
 
 START_TEST (when__lval_add__called_count_increases)
 {

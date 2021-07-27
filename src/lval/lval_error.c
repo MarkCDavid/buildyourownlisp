@@ -1,4 +1,4 @@
-#include "lval/lval_error.h"
+#include "lval_error.h"
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>

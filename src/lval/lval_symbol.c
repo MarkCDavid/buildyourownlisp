@@ -1,4 +1,4 @@
-#include "lval/lval_symbol.h"
+#include "lval_symbol.h"
 #include <stdlib.h>
 #include <string.h>
 

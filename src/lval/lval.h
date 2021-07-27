@@ -1,8 +1,8 @@
 #ifndef lval_h
 #define lval_h
 
-#include "ltypes.h"
-#include "mpc.h"
+#include "../ltypes.h"
+#include "../mpc.h"
 #include <stdio.h>
 
 lval *lval_integer(long integer);

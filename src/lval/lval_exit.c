@@ -1,4 +1,4 @@
-#include "lval/lval_exit.h"
+#include "lval_exit.h"
 #include <stdlib.h>
 
 lval *lval_exit(long exit_code) {

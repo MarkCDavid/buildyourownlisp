@@ -1,4 +1,4 @@
-#include "lval/lval_decimal.h"
+#include "lval_decimal.h"
 #include <stdlib.h>
 
 lval *lval_decimal(double decimal) {

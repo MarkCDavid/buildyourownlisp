@@ -1,4 +1,4 @@
-#include "lval/lval_lambda.h"
+#include "lval_lambda.h"
 #include "lenv.h"
 #include "lval/lval.h"
 #include <stdlib.h>
